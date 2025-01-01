@@ -1,0 +1,606 @@
+#!/bin/sh
+
+# <<-- Globals -->>
+
+## Start of package lists
+
+# AMD DRIVERS
+AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon lib32-vulkan-mesa-layers libva-mesa-driver libva-utils ocl-icd rocm-hip-runtime rocm-language-runtime rocm-opencl-runtime rocminfo vulkan-radeon vulkan-mesa-layers"
+
+# INTEL DRIVERS
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver intel-oneapi-compiler-dpcpp-cpp-runtime intel-oneapi-compiler-shared-runtime lib32-ocl-icd lib32-vulkan-intel lib32-vulkan-mesa-layers libva-utils vpl-gpu-rt vulkan-intel vulkan-mesa-layers"
+
+# NVIDIA DRIVERS
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau lib32-vulkan-mesa-layers libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-utils opencl-nvidia vdpauinfo vulkan-nouveau vulkan-mesa-layers"
+
+# OTHER DRIVERS
+OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-mesa-layers lib32-vulkan-swrast lib32-vulkan-virtio libva-mesa-driver libva-utils vulkan-mesa-layers vulkan-swrast vulkan-virtio"
+
+# BASE SYSTEM
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower dosfstools efibootmgr exfatprogs fastfetch ffmpeg firewalld git gnu-free-fonts lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth power-profiles-daemon pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber"
+
+# PLASMA DESKTOP
+DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-cups bluez-obex bluez-utils breeze5 colord cups cups-browsed cups-filters cups-pk-helper dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox flatpak flatpak-xdg-utils fwupd gamemode gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us ifuse kaccounts-integration kaccounts-providers kamera kate kcalc kdeconnect kdegraphics-mobipocket kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kimageformats5 kio-admin kio-extras kio-gdrive kio-zeroconf konsole kwalletmanager kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud libappimage libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libdvdcss libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 maliit-keyboard mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra openrgb orca p7zip partitionmanager phonon-qt5-gstreamer phonon-qt5-vlc phonon-qt6-vlc plasma plasma-applet-window-buttons plasma-framework5 plasma-wayland-protocols plasma5-integration power-profiles-daemon qpwgraph qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-virtualkeyboard quota-tools spectacle switcheroo-control system-config-printer thunderbird ttf-ms-fonts unarchiver usbguard vlc xdg-desktop-portal-gtk xdg-user-dirs xdg-user-dirs-gtk xwaylandvideobridge yt-dlp"
+
+## End of package lists
+
+# <<-- Functions -->>
+
+disk_mapping() {
+
+    # Create Disk Mapping
+    cfdisk $SYSTEM_DISK
+
+}
+
+initialize_system() {
+
+    # Refresh package database (Live environment)
+    pacman -Syy
+
+    # Install new archlinux keyring
+    pacman -S --noconfirm archlinux-keyring
+
+    # Initialize pacman-keyring
+    pacman-key --init
+    pacman-key --populate archlinux
+    pacman-key --lsign-key archlinux
+
+    # Create bootstrap enviornment
+    pacstrap $MOUNT_DIR base base-devel
+
+    # Chaotic Key Signature
+    CHAOTIC_KEYSIG="3056513887B78AEB"
+
+    # Recover Chaotic key signatures
+    arch-chroot $MOUNT_DIR pacman-key --recv-key ${CHAOTIC_KEYSIG} --keyserver keyserver.ubuntu.com
+    arch-chroot $MOUNT_DIR pacman-key --lsign-key ${CHAOTIC_KEYSIG}
+
+    # Install Chaotic repo packages
+    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+
+    # Install pacman.conf
+    install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
+
+    # Refresh package database (Chroot)
+    arch-chroot $MOUNT_DIR pacman -Syy
+
+    # Generate filesystem mounts
+    genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
+
+    # Install Base System
+    arch-chroot $MOUNT_DIR pacman -S --noconfirm $BASE_SYSTEM ${KERNEL} ${KERNEL}-headers
+
+    # Enable system services
+    arch-chroot $MOUNT_DIR systemctl enable avahi-daemon.service
+    arch-chroot $MOUNT_DIR systemctl enable avahi-dnsconfd.service
+    arch-chroot $MOUNT_DIR systemctl enable cpupower.service
+    arch-chroot $MOUNT_DIR systemctl enable NetworkManager.service
+    arch-chroot $MOUNT_DIR systemctl enable rtirq.service
+    arch-chroot $MOUNT_DIR systemctl enable rtirq-resume.service
+    arch-chroot $MOUNT_DIR systemctl enable rtkit-daemon.service
+
+}
+
+initialize_chroot_environment() {
+
+    # Enter chroot environment
+    arch-chroot $MOUNT_DIR
+    # Unmount Environment
+    umount -lf $MOUNT_DIR
+
+}
+
+initialize_computer_settings() {
+
+    # Set system-wide default system text editor
+    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/enviornment
+
+    # Create the mkinitcpio file
+    echo "# Extra modules to be loaded into the initramfs" > $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "MODULES=()" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "# Hooks used to configure modules" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "HOOKS=(base udev autodetect microcode modconf kms keyboard keymap block filesystems fsck plymouth)" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "# Compression algorithm to be used" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "COMPRESSION=\"zstd\"" >> $MOUNT_DIR/etc/mkinitcpio.conf
+
+    # Set hostname
+    echo "$HOSTNAME" > $MOUNT_DIR/etc/hostname
+
+}
+
+partition_boot() {
+
+    # Create A UEFI Boot Partition
+    mkfs.vfat -F32 $SYSTEM_BOOT
+
+    # Label Boot Partition
+    fatlabel $SYSTEM_BOOT ESP
+
+}
+
+partition_mapping() {
+
+    # Mount root filesystem
+    mount -t btrfs $SYSTEM_ROOT $MOUNT_DIR
+
+    if [[ "$PARTITION_TYPE" == "none" ]]; then
+        if [[ -d "$MOUNT_DIR/@" ]]; then
+            btrfs subvolume delete $MOUNT_DIR/@
+        fi
+    fi
+
+    # Create BTRFS subvolumes
+    btrfs subvolume create $MOUNT_DIR/@
+    if [[ ! -d "$MOUNT_DIR/@home" ]]; then
+        btrfs subvolume create $MOUNT_DIR/@home
+    fi
+
+    # Unmount root filesystem
+    umount $MOUNT_DIR
+
+    # Mount BTRFS root @ subvolume
+    mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@ $SYSTEM_ROOT $MOUNT_DIR
+
+    # Make system directories
+    mkdir -p $MOUNT_DIR/home
+
+    # Mount BTRFS subvolumes
+    mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@home $SYSTEM_ROOT $MOUNT_DIR/home
+
+    # ESP system partition directory
+    ESP_DIRECTORY="$MOUNT_DIR/boot"
+
+    # Make ESP directory
+    mkdir -p $ESP_DIRECTORY
+
+    # Mount ESP Directory
+    mount $SYSTEM_BOOT $ESP_DIRECTORY
+
+}
+
+partition_root() {
+
+    # Choose installation filesystem type
+    if [[ "$PARTITION_TYPE" == "none" ]]; then
+        # Do nothing
+        continue
+    elif [[ "$PARTITION_TYPE" == "btrfs" ]]; then
+        # Create A BTRFS root partition
+        mkfs.btrfs -f $SYSTEM_ROOT
+
+        # Label BTRFS root partition
+        btrfs filesystem label $SYSTEM_ROOT "$OS_NAME"
+    fi
+
+}
+
+setup_bootloader() {
+
+    # System root partition UUID
+    ROOT_UUID=`lsblk $SYSTEM_ROOT -o UUID | tr "\n" " " | cut -d " " -f 2`
+
+    # Boot commandline options
+    BOOT_OPTIONS="loglevel=3 quiet preempt=full threadirqs usbcore.autosuspend=-1 splash"
+
+    # Create EFIStub Entry
+    arch-chroot $MOUNT_DIR efibootmgr --create --disk $SYSTEM_DISK --part 1 --label "${OS_NAME}_\${KERNEL}" --loader /vmlinuz-${KERNEL} --unicode "rootflags=subvol=@,rw rootfstype=btrfs root=UUID=${ROOT_UUID} resume=UUID=${ROOT_UUID} ${GPU_EFISTUB} ${BOOT_OPTIONS} ${CPU_FIRMWARE} initrd=\initramfs-${KERNEL}.img"
+
+    # Create efistub entry generation script
+    echo "#/bin/sh" > ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "if [[ \"\$USER\" == \"root\" ]] then" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "if [[ \"\$#\" == \"1\" ]] then" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "KERNEL_CHOICE=\$1" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "efibootmgr --create --disk $SYSTEM_DISK --part 1 --label \"${OS_NAME}_\${KERNEL_CHOICE}\" --loader /vmlinuz-\${KERNEL_CHOICE} --unicode \"rootflags=subvol=@,rw rootfstype=btrfs root=UUID=${ROOT_UUID} resume=UUID=${ROOT_UUID} ${BOOT_OPTIONS} ${GPU_EFISTUB} ${CPU_FIRMWARE} initrd=\initramfs-\${KERNEL_CHOICE}.img\"" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "else" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "echo \"Please type in the kernel to create an entry for (i.e. linux-zen)\"" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "fi" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "else" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "echo \"Please be root to run this script\"" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    echo "fi" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    chmod +x ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+
+}
+
+setup_cpu_microcode() {
+
+    # Install CPU Microcode
+    if [[ "${CPU}" == "amd" ]]; then
+        # Install AMD CPU Firmware
+        arch-chroot $MOUNT_DIR pacman -S --noconfirm amd-ucode
+        # CPU Firmware
+        CPU_FIRMWARE="initrd=\amd-ucode.img"
+    elif [[ "${CPU}" == "intel" ]]; then
+        # Install Intel CPU Firmware
+        arch-chroot $MOUNT_DIR pacman -S --noconfirm intel-ucode
+        # Set CPU Options for EFI stub
+        CPU_FIRMWARE="initrd=\intel-ucode.img"
+    elif [[ "${CPU}" == "other" ]]; then
+        echo "No microcode needed..."
+        clear
+    fi
+
+}
+
+setup_desktop_session() {
+
+    # Install Plasma Desktop
+    arch-chroot $MOUNT_DIR pacman -S --noconfirm $DESKTOP_SESSION
+
+    # Create SDDM directory
+    mkdir -p $MOUNT_DIR/etc/sddm.conf.d
+
+    # Install SDDM configuration
+    echo "[General]" > $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "HaltCommand=/usr/bin/systemctl poweroff" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "RebootCommand=/usr/bin/systemctl reboot" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "[Theme]" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "Current=breeze" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "CursorTheme=breeze_cursors" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "Font=Noto Sans,10,-1,0,50,0,0,0,0,0" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "[Users]" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "MaximumUid=60513" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    echo "MinimumUid=1000" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+
+    # Enable virtual keyboard module in SDDM
+    echo "[General]" > $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
+    echo "InputMethod=qtvirtualkeyboard" >> $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
+
+    # Enable system services
+    arch-chroot $MOUNT_DIR systemctl enable bluetooth.service
+    arch-chroot $MOUNT_DIR systemctl enable cups.service
+    arch-chroot $MOUNT_DIR systemctl enable cups-browsed.service
+    arch-chroot $MOUNT_DIR systemctl enable power-profiles-daemon.service
+    arch-chroot $MOUNT_DIR systemctl enable sddm.service
+
+    # Add user to groups
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME flatpak
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME games
+
+}
+
+setup_gpu_drivers() {
+
+    # Install the display drivers
+    if [[ "${GPU}" == "amd" ]]; then
+        # Install AMD GPU drivers
+        arch-chroot $MOUNT_DIR pacman -S --noconfirm $AMDGPU_DRV
+    elif [[ "${GPU}" == "intel" ]]; then
+        # Install Intel GPU drivers
+        arch-chroot $MOUNT_DIR pacman -S --noconfirm $INTELGPU_DRV
+    elif [[ "${GPU}" == "nvidia" ]]; then
+        # Install Nvidia GPU drivers
+        arch-chroot $MOUNT_DIR pacman -S --noconfirm $NVIDIAGPU_DRV
+        # Enable Nvidia related services
+        arch-chroot $MOUNT_DIR systemctl enable nvidia-persistenced.service
+        arch-chroot $MOUNT_DIR systemctl enable nvidia-powerd.service
+    elif [[ "${GPU}" == "other" ]]; then
+        # Install Intel GPU drivers
+        arch-chroot $MOUNT_DIR pacman -S --noconfirm $OTHERGPU_DRV
+    fi
+
+}
+
+setup_locale() {
+
+    # Set system language
+    sed -i -e "s/#${LOCALE}/${LOCALE}/" $MOUNT_DIR/etc/locale.gen
+    echo "LANG=${LOCALE}.UTF-8" > $MOUNT_DIR/etc/locale.conf
+    arch-chroot $MOUNT_DIR locale-gen
+
+    # Set timezone and correct time
+    arch-chroot $MOUNT_DIR ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+
+}
+
+setup_user_account() {
+
+    # Create the new non-root user
+    arch-chroot $MOUNT_DIR useradd -m $USERNAME
+
+    # Set password for the new user
+    echo "$USERNAME:$PASSWORD" | arch-chroot $MOUNT_DIR chpasswd
+
+    # Enable the wheel group root privileges
+    sed -i -e 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' $MOUNT_DIR/etc/sudoers
+
+    # Add user to groups
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME audio
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME realtime
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME video
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME wheel
+
+    if [[ "${GPU}" == "nvidia" ]]; then
+        arch-chroot $MOUNT_DIR gpasswd -a $USERNAME nvidia-persistenced
+    fi
+
+}
+
+# <<-- Main Menu -->>
+
+# Make sure to run the script as root
+if [[ "$USER" == "root" ]]; then
+
+    while :
+    do
+
+        ## Choosse system install disk
+        clear
+        echo "Choose System Install Drive..."
+        echo ""
+        lsblk -o PATH,SIZE,TYPE | grep "disk"
+        echo ""
+        read -r -p "Choose the correct disk for system install (i.e. /dev/sda1): " SYSTEM_DISK
+
+        ## Run cfdisk
+        disk_mapping
+        clear
+
+        ## Set system boot partition
+        clear
+        echo "Choose Boot Partition..."
+        echo ""
+        lsblk -o PATH,SIZE,TYPE $SYSTEM_DISK | grep "part"
+        echo ""
+        read -r -p "Choose partition for the boot loader (i.e. /dev/sda1): " SYSTEM_BOOT
+
+        ## Set system root partition
+        clear
+        echo "Choose Root Partition..."
+        echo ""
+        lsblk -o PATH,SIZE,TYPE $SYSTEM_DISK | grep "part"
+        echo ""
+        read -r -p "Choose partition for the root filesystem (i.e. /dev/sda2): " SYSTEM_ROOT
+
+        ## Set system partition type
+        clear
+        echo "Choose Partition Type..."
+        echo ""
+        read -r -p "Choose a partition type for system install (i.e. btrfs or none): " PARTITION_TYPE
+
+        ## Choose mountpoint
+        clear
+        echo "Choose Mountpoint..."
+        echo ""
+        read -r -p "Choose the absoulte path for the mountpoint directory (i.e. /mnt): " MOUNT_DIR
+
+        ## Set user and computer credentials
+        clear
+        echo "Enter Computer Credentials..."
+        echo ""
+        read -r -p "Type in a username: " USERNAME
+        read -r -p "Type in a password: " PASSWORD
+        read -r -p "Type in a hostname: " HOSTNAME
+
+        ## Set system locale
+        clear
+        echo "Choose Locale..."
+        sleep 2
+        cat /etc/locale.gen | grep "UTF-8" | cut -d " " -f 1 | cut -d "." -f 1 | cut -d "#" -f 2 | less
+        clear
+        read -r -p "Type in a system locale (i.e en_US): " LOCALE
+
+        ## Set timezone
+        clear
+        echo "Choose Timezone..."
+        sleep 2
+        timedatectl list-timezones | less
+        clear
+        read -r -p "Type in a system timezone (i.e America/New_York): " TIMEZONE
+
+        ## Type in the name for the kernel you want to use
+        clear
+        echo "Choose Kernel..."
+        echo ""
+        read -r -p "Type in the kernel name you want to use (i.e linux-zen): " KERNEL
+
+        ## Type in a name for your operating system
+        clear
+        echo "Type Your Operating System Name..."
+        echo ""
+        read -r -p "Type in an operating system name (i.e Archlinux): " OS_NAME
+
+        ## System configuration confirmation
+        clear
+        echo "Basic configuration settings"
+        echo ""
+        echo "System install disk: $SYSTEM_DISK"
+        echo "Boot partition: $SYSTEM_BOOT"
+        echo "Root partition: $SYSTEM_ROOT"
+        echo "System install root partition type: $PARTITION_TYPE"
+        echo "System install mountpoint directory: $MOUNT_DIR"
+        echo "Username: $USERNAME"
+        echo "Password: $PASSWORD"
+        echo "Computer's hostname: $HOSTNAME"
+        echo "System locale: $LOCALE"
+        echo "Current timezone: $TIMEZONE"
+        echo "Kernel choice: $KERNEL"
+        echo "Operating system name: $OS_NAME"
+        echo ""
+        read -r -p "Is this information correct (type yes or no or exit): " MENU_OPTION
+
+        if [[ "$MENU_OPTION" == "yes" ]]; then
+            sleep 2
+            break
+        elif [[ "$MENU_OPTION" == "no" ]]; then
+            sleep 2
+            continue
+        elif [[ "$MENU_OPTION" == "exit" ]]; then
+            sleep 2
+            exit
+        else
+            echo ""
+            echo "Type in a valid option, restarting...."
+            sleep 5
+        fi
+
+    done
+
+    ## Partition system
+    clear
+    partition_root
+    partition_mapping
+    partition_boot
+    echo ""
+    echo "Partitioned System..."
+    sleep 2
+
+    ## Intialize the bootstrap environment
+    clear
+    initialize_system
+    initialize_computer_settings
+    echo ""
+    echo "Created Initial System..."
+    sleep 2
+
+    ## CPU microcode install
+    while :
+    do
+
+        clear
+        read -r -p "Type in the CPU name you have in your system (Options: amd, intel, other): " CPU
+
+        # Check if a supported CPU is available
+        if [[ "${CPU}" == "amd" ]]; then
+            clear
+            setup_cpu_microcode
+            echo ""
+            echo "Installed CPU Microcode..."
+            sleep 2
+            break
+        elif [[ "${CPU}" == "intel" ]]; then
+            clear
+            setup_cpu_microcode
+            echo ""
+            echo "Installed CPU Microcode..."
+            sleep 2
+            break
+        elif [[ "${CPU}" == "other" ]]; then
+            clear
+            setup_cpu_microcode
+            echo ""
+            echo "Installed CPU Microcode..."
+            sleep 2
+            break
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+    ## GPU driver installer
+    while :
+    do
+
+        clear
+        read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia, other, virtualbox): " GPU
+
+        # Check if a supported GPU is available
+        if [[ "${GPU}" == "amd" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "intel" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "nvidia" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "other" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+    ## Install the base system
+    clear
+    setup_base_system
+    setup_locale
+    setup_user_account
+    setup_bootloader
+    echo ""
+    echo "Installed The Base System..."
+    sleep 5
+
+    ## Choose desktop environment
+    while :
+    do
+
+        clear
+        read -p "Choose a desktop environment or window manager (options: none, plasma): " DESKTOP_ENV
+
+        # Check which desktop you want to use
+        if [[ "${DESKTOP_ENV}" == "none" ]]; then
+            clear
+            echo ""
+            echo "No desktop environment installed..."
+            sleep 2
+        elif [[ "${DESKTOP_ENV}" == "plasma" ]]; then
+            clear
+            setup_desktop_session
+            echo ""
+            echo "Installed the desktop environment..."
+            sleep 2
+            break
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+    ## Chroot environment (optional setting)
+    while :
+    do
+
+        clear
+        read -r -p "Do you want to chroot into the system after install (type yes or no): " CHROOT_ENV
+
+        # Check if you want to enter the chroot environment
+        if [[ "${CHROOT_ENV}" == "yes" ]]; then
+            clear
+            initialize_chroot_environment
+            break
+        elif [[ "${CHROOT_ENV}" == "no" ]]; then
+            clear
+            exit
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+else
+    echo "Please be root to run this script..."
+fi
