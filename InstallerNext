@@ -20,7 +20,7 @@ OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-mesa-layers lib32-vulkan-swra
 BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower dosfstools efibootmgr exfatprogs fastfetch ffmpeg firewalld git gnu-free-fonts lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth power-profiles-daemon pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber"
 
 # GNOME DESKTOP
-DESKTOP_SESSION="arj bluez bluez-cups bluez-obex bluez-utils bzip3 cdrtools celluloid cpio cups cups-browsed cups-filters cups-pk-helper dpkg ebook-tools epiphany evince ffmpegthumbnailer file-roller firefox flatpak fwupd gamemode gdm geary ghex gnome-backgrounds gnome-browser-connector gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-contacts gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell-performance gnome-software gnome-system-monitor gnome-text-editor gnome-tour gnome-tweaks gnome-user-docs gnome-user-share gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va gvfs-afc gvfs-dnssd gvfs-goa gvfs-google gvfs-gphoto2 gvfs-mtp gvfs-nfs gvfs-onedrive gvfs-smb gvfs-wsdd hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools lhasa lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-libdbusmenu-gtk2 lib32-libdbusmenu-gtk3 lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libdvdcss libgepub libgpod libopenraw libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 lollypop loupe lrzip malcontent maliit-keyboard mangohud nautilus nautilus-image-converter nautilus-share noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca polari power-profiles-daemon quota-tools rpmextract rygel sane sane-airscan seahorse seahorse-nautilus simple-scan snapshot squashfs-tools sushi switcheroo-control system-config-printer tecla ttf-ms-fonts tumbler unace unrar usbguard xdg-desktop-portal-gnome xdg-desktop-portal-gtk xdg-desktop-portal-gtk xdg-user-dirs xdg-user-dirs-gtk xorg-xhost xwaylandvideobridge yelp yt-dlp zip"
+DESKTOP_SESSION="arj bluez bluez-cups bluez-obex bluez-utils bzip3 cdrtools celluloid cpio cups cups-browsed cups-filters cups-pk-helper dpkg ebook-tools epiphany evince ffmpegthumbnailer file-roller firefox flatpak fwupd gamemode gdm geary gedit gedit-plugins ghex gnome-backgrounds gnome-browser-connector gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-contacts gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell-performance gnome-software gnome-system-monitor gnome-tour gnome-tweaks gnome-user-docs gnome-user-share gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va gucharmap gvfs-afc gvfs-dnssd gvfs-goa gvfs-google gvfs-gphoto2 gvfs-mtp gvfs-nfs gvfs-onedrive gvfs-smb gvfs-wsdd hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools kvantum kvantum-qt5 lhasa lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-libdbusmenu-gtk2 lib32-libdbusmenu-gtk3 lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libdvdcss libgepub libgpod libopenraw libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 lollypop loupe lrzip malcontent maliit-keyboard mangohud nautilus nautilus-image-converter nautilus-share noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca polari power-profiles-daemon qt5-wayland qt6-wayland quota-tools rpmextract rygel sane sane-airscan seahorse seahorse-nautilus simple-scan snapshot squashfs-tools sushi switcheroo-control system-config-printer tecla ttf-ms-fonts tumbler unace unrar usbguard xdg-desktop-portal-gnome xdg-desktop-portal-gtk xdg-desktop-portal-gtk xdg-user-dirs xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-server xorg-xauth xorg-xhost yelp yt-dlp zip"
 
 ## End of package lists
 
@@ -72,6 +72,9 @@ initialize_system() {
     # Install Base System
     arch-chroot $MOUNT_DIR pacman -S --noconfirm $BASE_SYSTEM ${KERNEL} ${KERNEL}-headers
 
+    ## Make vim the default system-wide editor
+    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
+
     # Enable system services
     arch-chroot $MOUNT_DIR systemctl enable avahi-daemon.service
     arch-chroot $MOUNT_DIR systemctl enable avahi-dnsconfd.service
@@ -95,7 +98,7 @@ initialize_chroot_environment() {
 initialize_computer_settings() {
 
     # Set system-wide default system text editor
-    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/enviornment
+    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
 
     # Create the mkinitcpio file
     echo "# Extra modules to be loaded into the initramfs" > $MOUNT_DIR/etc/mkinitcpio.conf
@@ -239,6 +242,9 @@ setup_desktop_session() {
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME flatpak
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME games
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME gdm
+    
+    ## Add kvantum stylesheet support
+    echo "QT_STYLE_OVERRIDE=kvantum" >> $MOUNT_DIR/etc/environment
 
 }
 
@@ -290,6 +296,7 @@ setup_user_account() {
     # Add user to groups
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME audio
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME realtime
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME rtkit
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME video
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME wheel
 
