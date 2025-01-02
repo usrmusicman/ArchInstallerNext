@@ -11,7 +11,7 @@ AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon lib32-vulk
 INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver intel-oneapi-compiler-dpcpp-cpp-runtime intel-oneapi-compiler-shared-runtime lib32-ocl-icd lib32-vulkan-intel lib32-vulkan-mesa-layers libva-utils vpl-gpu-rt vulkan-intel vulkan-mesa-layers"
 
 # NVIDIA DRIVERS
-NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau lib32-vulkan-mesa-layers libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-utils opencl-nvidia vdpauinfo vulkan-nouveau vulkan-mesa-layers"
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau lib32-vulkan-mesa-layers libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils opencl-nvidia vdpauinfo vulkan-nouveau vulkan-mesa-layers"
 
 # OTHER DRIVERS
 OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-mesa-layers lib32-vulkan-swrast lib32-vulkan-virtio libva-mesa-driver libva-utils vulkan-mesa-layers vulkan-swrast vulkan-virtio"
@@ -19,8 +19,8 @@ OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-mesa-layers lib32-vulkan-swra
 # BASE SYSTEM
 BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower dosfstools efibootmgr exfatprogs fastfetch ffmpeg firewalld git gnu-free-fonts lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth power-profiles-daemon pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber"
 
-# PLASMA DESKTOP
-DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-cups bluez-obex bluez-utils breeze5 colord cups cups-browsed cups-filters cups-pk-helper dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox flatpak flatpak-xdg-utils fwupd gamemode gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us ifuse kaccounts-integration kaccounts-providers kamera kate kcalc kdeconnect kdegraphics-mobipocket kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kimageformats5 kio-admin kio-extras kio-gdrive kio-zeroconf konsole kwalletmanager kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud libappimage libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libdvdcss libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 maliit-keyboard mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra openrgb orca p7zip partitionmanager phonon-qt5-gstreamer phonon-qt5-vlc phonon-qt6-vlc plasma plasma-applet-window-buttons plasma-framework5 plasma-wayland-protocols plasma5-integration power-profiles-daemon qpwgraph qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-virtualkeyboard quota-tools spectacle switcheroo-control system-config-printer thunderbird ttf-ms-fonts unarchiver usbguard vlc xdg-desktop-portal-gtk xdg-user-dirs xdg-user-dirs-gtk xwaylandvideobridge yt-dlp"
+# GNOME DESKTOP
+DESKTOP_SESSION="arj bluez bluez-cups bluez-obex bluez-utils bzip3 cdrtools celluloid cpio cups cups-browsed cups-filters cups-pk-helper dpkg ebook-tools epiphany evince ffmpegthumbnailer file-roller firefox flatpak fwupd gamemode gdm geary ghex gnome-backgrounds gnome-browser-connector gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-color-manager gnome-connections gnome-console gnome-contacts gnome-control-center gnome-disk-utility gnome-font-viewer gnome-keyring gnome-logs gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell-performance gnome-software gnome-system-monitor gnome-text-editor gnome-tour gnome-tweaks gnome-user-docs gnome-user-share gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va gvfs-afc gvfs-dnssd gvfs-goa gvfs-google gvfs-gphoto2 gvfs-mtp gvfs-nfs gvfs-onedrive gvfs-smb gvfs-wsdd hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools lhasa lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-libdbusmenu-gtk2 lib32-libdbusmenu-gtk3 lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libdvdcss libgepub libgpod libopenraw libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 lollypop loupe lrzip malcontent maliit-keyboard mangohud nautilus nautilus-image-converter nautilus-share noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca polari power-profiles-daemon quota-tools rpmextract rygel sane sane-airscan seahorse seahorse-nautilus simple-scan snapshot squashfs-tools sushi switcheroo-control system-config-printer tecla ttf-ms-fonts tumbler unace unrar usbguard xdg-desktop-portal-gnome xdg-desktop-portal-gtk xdg-desktop-portal-gtk xdg-user-dirs xdg-user-dirs-gtk xorg-xhost xwaylandvideobridge yelp yt-dlp zip"
 
 ## End of package lists
 
@@ -116,9 +116,6 @@ partition_boot() {
 
     # Create A UEFI Boot Partition
     mkfs.vfat -F32 $SYSTEM_BOOT
-
-    # Label Boot Partition
-    fatlabel $SYSTEM_BOOT ESP
 
 }
 
@@ -231,37 +228,17 @@ setup_desktop_session() {
     # Install Plasma Desktop
     arch-chroot $MOUNT_DIR pacman -S --noconfirm $DESKTOP_SESSION
 
-    # Create SDDM directory
-    mkdir -p $MOUNT_DIR/etc/sddm.conf.d
-
-    # Install SDDM configuration
-    echo "[General]" > $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "HaltCommand=/usr/bin/systemctl poweroff" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "RebootCommand=/usr/bin/systemctl reboot" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "[Theme]" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "Current=breeze" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "CursorTheme=breeze_cursors" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "Font=Noto Sans,10,-1,0,50,0,0,0,0,0" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "[Users]" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "MaximumUid=60513" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-    echo "MinimumUid=1000" >> $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
-
-    # Enable virtual keyboard module in SDDM
-    echo "[General]" > $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
-    echo "InputMethod=qtvirtualkeyboard" >> $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
-
     # Enable system services
     arch-chroot $MOUNT_DIR systemctl enable bluetooth.service
     arch-chroot $MOUNT_DIR systemctl enable cups.service
     arch-chroot $MOUNT_DIR systemctl enable cups-browsed.service
+    arch-chroot $MOUNT_DIR systemctl enable gdm.service
     arch-chroot $MOUNT_DIR systemctl enable power-profiles-daemon.service
-    arch-chroot $MOUNT_DIR systemctl enable sddm.service
 
     # Add user to groups
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME flatpak
     arch-chroot $MOUNT_DIR gpasswd -a $USERNAME games
+    arch-chroot $MOUNT_DIR gpasswd -a $USERNAME gdm
 
 }
 

@@ -1,2 +1,2 @@
 # ArchInstallerNext
-Archlinux Installer with KDE and chaotic-aur
+Archlinux Installer with GNOME and chaotic-aur
