@@ -5,10 +5,10 @@
 ## Start of package lists
 
 # AMD DRIVERS
-AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-hip-runtime rocm-language-runtime rocm-opencl-runtime rocminfo vulkan-radeon"
+AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
 
 # INTEL DRIVERS
-INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver intel-oneapi-compiler-dpcpp-cpp-runtime intel-oneapi-compiler-shared-runtime lib32-ocl-icd lib32-vulkan-intel libva-utils vpl-gpu-rt vulkan-intel"
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils vpl-gpu-rt vulkan-intel"
 
 # NVIDIA DRIVERS
 NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils opencl-nvidia vdpauinfo vulkan-nouveau"
