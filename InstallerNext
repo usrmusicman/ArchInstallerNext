@@ -8,19 +8,19 @@
 AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
 
 # INTEL DRIVERS
-INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils vpl-gpu-rt vulkan-intel"
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
 
 # NVIDIA DRIVERS
-NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils opencl-nvidia vdpauinfo vulkan-nouveau"
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
 
 # OTHER DRIVERS
 OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-swrast lib32-vulkan-virtio libva-mesa-driver libva-utils vulkan-swrast vulkan-virtio"
 
 # BASE SYSTEM
-BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower dosfstools efibootmgr exfatprogs fastfetch ffmpeg ffmpeg4.4 firewalld git gnu-free-fonts lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth power-profiles-daemon pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber"
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower dosfstools efibootmgr exfatprogs fastfetch ffmpeg ffmpeg4.4 firewalld git gnu-free-fonts grub grub-btrfs lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth power-profiles-daemon pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber"
 
 # GNOME DESKTOP
-DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-obex bluez-utils breeze5 dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox firewalld flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing keditbookmarks kimageformats kio-admin kio-extras kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-libdbusmenu-gtk2 lib32-libdbusmenu-gtk3 lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 plasma5-integration phonon-qt5-gstreamer phonon-qt6-mpv plasma power-profiles-daemon qbittorrent qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan simple-scan spectacle switcheroo-control ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost yelp yt-dlp"
+DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-obex bluez-utils breeze5 dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox firewalld flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-espeak gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-libdbusmenu-gtk2 lib32-libdbusmenu-gtk3 lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 plasma5-integration phonon-qt5-gstreamer phonon-qt6-mpv plasma power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan simple-scan spectacle switcheroo-control timeshift timeshift-autosnap ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost yelp yt-dlp"
 
 ## End of package lists
 
@@ -154,7 +154,7 @@ partition_mapping() {
     mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@home $SYSTEM_ROOT $MOUNT_DIR/home
 
     # ESP system partition directory
-    ESP_DIRECTORY="$MOUNT_DIR/boot"
+    ESP_DIRECTORY="$MOUNT_DIR/boot/efi"
 
     # Make ESP directory
     mkdir -p $ESP_DIRECTORY
@@ -188,23 +188,14 @@ setup_bootloader() {
     # Boot commandline options
     BOOT_OPTIONS="loglevel=3 quiet preempt=full threadirqs usbcore.autosuspend=-1 splash"
 
-    # Create EFIStub Entry
-    arch-chroot $MOUNT_DIR efibootmgr --create --disk $SYSTEM_DISK --part 1 --label "${OS_NAME}_\${KERNEL}" --loader /vmlinuz-${KERNEL} --unicode "rootflags=subvol=@,rw rootfstype=btrfs root=UUID=${ROOT_UUID} resume=UUID=${ROOT_UUID} ${GPU_EFISTUB} ${BOOT_OPTIONS} ${CPU_FIRMWARE} initrd=\initramfs-${KERNEL}.img"
+    # Install GRUB
+    arch-chroot $MOUNT_DIR grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id="$OS_NAME" $SYSTEM_BOOT
 
-    # Create efistub entry generation script
-    echo "#/bin/sh" > ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "if [[ \"\$USER\" == \"root\" ]] then" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "if [[ \"\$#\" == \"1\" ]] then" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "KERNEL_CHOICE=\$1" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "efibootmgr --create --disk $SYSTEM_DISK --part 1 --label \"${OS_NAME}_\${KERNEL_CHOICE}\" --loader /vmlinuz-\${KERNEL_CHOICE} --unicode \"rootflags=subvol=@,rw rootfstype=btrfs root=UUID=${ROOT_UUID} resume=UUID=${ROOT_UUID} ${BOOT_OPTIONS} ${GPU_EFISTUB} ${CPU_FIRMWARE} initrd=\initramfs-\${KERNEL_CHOICE}.img\"" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "else" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "echo \"Please type in the kernel to create an entry for (i.e. linux-zen)\"" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "fi" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "else" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "echo \"Please be root to run this script\"" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    echo "fi" >> ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
-    chmod +x ${MOUNT_DIR}/usr/local/bin/efistub_generate_entry
+    # Configure GRUB
+    sed -i -e "s/GRUB_CMDLINE_LINUX_DEFAULT=\"loglevel=3 quiet\"/GRUB_CMDLINE_LINUX_DEFAULT=\"rootflags=subvol=@,relatime,rw rootfstype=btrfs root=UUID=${ROOT_UUID} resume=UUID=${ROOT_UUID} ${BOOT_OPTIONS}\"/" $MOUNT_DIR/etc/default/grub
+
+    # Generate GRUB Config
+    arch-chroot $MOUNT_DIR grub-mkconfig -o /boot/grub/grub.cfg
 
 }
 
@@ -214,13 +205,9 @@ setup_cpu_microcode() {
     if [[ "${CPU}" == "amd" ]]; then
         # Install AMD CPU Firmware
         arch-chroot $MOUNT_DIR pacman -S --noconfirm amd-ucode
-        # CPU Firmware
-        CPU_FIRMWARE="initrd=\amd-ucode.img"
     elif [[ "${CPU}" == "intel" ]]; then
         # Install Intel CPU Firmware
         arch-chroot $MOUNT_DIR pacman -S --noconfirm intel-ucode
-        # Set CPU Options for EFI stub
-        CPU_FIRMWARE="initrd=\intel-ucode.img"
     elif [[ "${CPU}" == "other" ]]; then
         echo "No microcode needed..."
         clear
@@ -230,8 +217,11 @@ setup_cpu_microcode() {
 
 setup_desktop_session() {
 
-    # Install Plasma Desktop
+    # Install Plasma desktop
     arch-chroot $MOUNT_DIR pacman -S --noconfirm $DESKTOP_SESSION
+
+    # Remove printer settings module
+    arch-chroot $MOUNT_DIR pacman -Rsc --noconfirm print-manager
 
     # Enable system services
     arch-chroot $MOUNT_DIR systemctl enable bluetooth.service
