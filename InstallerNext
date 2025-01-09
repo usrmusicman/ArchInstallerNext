@@ -5,22 +5,22 @@
 ## Start of package lists
 
 # AMD DRIVERS
-AMDGPU_DRV="libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
+AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
 
 # INTEL DRIVERS
-INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
 
 # NVIDIA DRIVERS
-NVIDIAGPU_DRV="libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
 
 # OTHER DRIVERS
-OTHERGPU_DRV="libva-mesa-driver libva-utils vulkan-swrast vulkan-virtio"
+OTHERGPU_DRV="lib32-libva-mesa-driver libva-mesa-driver libva-utils vulkan-virtio"
 
 # BASE SYSTEM
-BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cronie dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va linux-firmware man-db man-pages mkinitcpio mtools net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cronie dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
 
 # GNOME DESKTOP
-DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-obex bluez-utils breeze5 dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox firewalld flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio5-extras konsole kwalletmanager kwayland-integration libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 partitionmanager plasma5-integration phonon-qt5-vlc phonon-qt6-vlc power-profiles-daemon plasma power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan simple-scan spectacle switcheroo-control timeshift unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost xwaylandvideobridge yt-dlp"
+DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-obex bluez-utils breeze5 dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox firewalld flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 partitionmanager plasma5-integration phonon-qt5-vlc phonon-qt6-vlc power-profiles-daemon plasma power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan simple-scan spectacle switcheroo-control timeshift timeshift-autosnap ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost xwaylandvideobridge yt-dlp"
 
 ## End of package lists
 
@@ -48,6 +48,17 @@ initialize_system() {
 
     # Create bootstrap enviornment
     pacstrap $MOUNT_DIR base base-devel
+
+    # Chaotic Key Signature
+    CHAOTIC_KEYSIG="3056513887B78AEB"
+
+    # Recover Chaotic key signatures
+    arch-chroot $MOUNT_DIR pacman-key --recv-key ${CHAOTIC_KEYSIG} --keyserver keyserver.ubuntu.com
+    arch-chroot $MOUNT_DIR pacman-key --lsign-key ${CHAOTIC_KEYSIG}
+
+    # Install Chaotic repo packages
+    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
 
     # Install pacman.conf
     install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
