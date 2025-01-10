@@ -1,0 +1,205 @@
+#!/bin/sh
+
+# <<-- Globals -->>
+
+## Start of package lists
+
+# AMD DRIVERS
+AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
+
+# INTEL DRIVERS
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
+
+# NVIDIA DRIVERS
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
+
+# OTHER DRIVERS
+OTHERGPU_DRV="lib32-libva-mesa-driver libva-mesa-driver libva-utils vulkan-virtio"
+
+# BASE SYSTEM
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-pipewire-jack lib32-pipewire-v4l2 linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
+
+# GNOME DESKTOP
+DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-obex bluez-utils breeze5 dolphin dolphin-plugins downgrade ebook-tools ffmpegthumbs firefox firewalld flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio-gdrive kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 partitionmanager plasma5-integration phonon-qt5-vlc phonon-qt6-vlc power-profiles-daemon plasma power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan simple-scan spectacle switcheroo-control ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost xwaylandvideobridge yt-dlp"
+
+## End of package lists
+
+cachyos_post_install() {
+
+    # Install base system
+    pacman -S --noconfirm $BASE_SYSTEM
+
+    # Refresh package database (Chroot)
+    pacman -Syyuu --noconfirm
+
+    ## Make vim the default system-wide editor
+    echo "EDITOR=/usr/bin/vim" >> $MOUNT_DIR/etc/environment
+
+    # Enable system services
+    systemctl enable avahi-daemon.service
+    systemctl enable avahi-dnsconfd.service
+    systemctl enable cpupower.service
+    systemctl enable dbus-broker.service
+    systemctl enable firewalld.service
+    systemctl enable NetworkManager.service
+    systemctl enable rtirq.service
+    systemctl enable rtirq-resume.service
+    systemctl enable rtkit-daemon.service
+
+}
+
+setup_desktop_session() {
+
+    # Install Plasma desktop
+    pacman -S --noconfirm $DESKTOP_SESSION
+
+    # Remove printer settings module
+    pacman -Rsc --noconfirm print-manager
+
+    # Enable system services
+    systemctl enable bluetooth.service
+    systemctl enable power-profiles-daemon.service
+    systemctl enable sddm.service
+
+    # Add user to groups
+    gpasswd -a $USERNAME flatpak
+    gpasswd -a $USERNAME games
+    gpasswd -a $USERNAME sddm
+
+}
+
+setup_gpu_drivers() {
+
+    # Install the display drivers
+    if [[ "${GPU}" == "amd" ]]; then
+        # Install AMD GPU drivers
+        pacman -S --noconfirm $AMDGPU_DRV
+    elif [[ "${GPU}" == "intel" ]]; then
+        # Install Intel GPU drivers
+        pacman -S --noconfirm $INTELGPU_DRV
+    elif [[ "${GPU}" == "nvidia" ]]; then
+        # Install Nvidia GPU drivers
+        pacman -S --noconfirm $NVIDIAGPU_DRV
+        # Enable Nvidia related services
+        systemctl enable nvidia-persistenced.service
+        systemctl enable nvidia-powerd.service
+        # Rebulid linux kernel image
+        mkinitcpio -p ${KERNEL}
+    elif [[ "${GPU}" == "other" ]]; then
+        # Install Intel GPU drivers
+        pacman -S --noconfirm $OTHERGPU_DRV
+    fi
+
+}
+
+# <<-- Main Menu -->>
+
+# Make sure to run the script as root
+if [[ "$USER" == "root" ]]; then
+
+    ## Intialize the bootstrap environment
+    while :
+    do
+
+        clear
+        echo "CachyOS Post installer setup"
+        echo ""
+        read -r -p "Do you want to run the post-install script (Type: yes or no): " MENU_OPTION
+        echo ""
+        read -r -p "Type in your username (i.e. myusername): " USERNAME
+        clear
+
+        if [[ "$MENU_OPTION" == "yes" ]]; then
+            clear
+            echo ""
+            echo "Starting CachyOS post install..."
+            clear
+            cachyos_post_install
+            sleep 2
+            break
+        elif [[ "$MENU_OPTION" == "no" ]]; then
+            sleep 2
+            exit
+        else
+            echo ""
+            echo "Type in a valid option, restarting...."
+            sleep 5
+        fi
+
+    done
+
+    ## GPU driver installer
+    while :
+    do
+
+        clear
+        read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia, other, virtualbox): " GPU
+
+        # Check if a supported GPU is available
+        if [[ "${GPU}" == "amd" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "intel" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "nvidia" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "other" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+    ## Choose desktop environment
+    while :
+    do
+
+        clear
+        read -p "Choose a desktop environment or window manager (options: none, plasma): " DESKTOP_ENV
+
+        # Check which desktop you want to use
+        if [[ "${DESKTOP_ENV}" == "none" ]]; then
+            clear
+            echo ""
+            echo "No desktop environment installed..."
+            sleep 2
+        elif [[ "${DESKTOP_ENV}" == "plasma" ]]; then
+            clear
+            setup_desktop_session
+            echo ""
+            echo "Installed the desktop environment..."
+            sleep 2
+            break
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+else
+    echo "Please be root to run this script..."
+fi
