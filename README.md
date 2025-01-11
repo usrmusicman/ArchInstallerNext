@@ -1,2 +1,2 @@
 # ArchInstallerNext
-Archlinux Installer with GNOME and chaotic-aur
+Archlinux Installer with Plasma (64-Bit only)
