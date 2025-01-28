@@ -11,13 +11,13 @@ AMDGPU_DRV="libva-mesa-driver libva-utils lib32-ocl-icd lib32-vulkan-radeon ocl-
 INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
 
 # NVIDIA DRIVERS
-NVIDIAGPU_DRV="lib32-nvidia-cg-toolkit lib32-nvidia-utils lib32-opencl-nvidia lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
+NVIDIAGPU_DRV="lib32-nvidia-cg-toolkit lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
 
 # OTHER DRIVERS
 OTHERGPU_DRV="lib32-vulkan-virtio libva-mesa-driver libva-utils vulkan-virtio"
 
 # BASE SYSTEM
-BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cronie cups cups-browsed cups-filters cups-pdf cups-pk-helper dnsmasq dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs lib32-gst-plugins-base lib32-gst-plugins-good lib32-pipewire-jack gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va inotify-tools linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cronie cups cups-browsed cups-filters cups-pdf cups-pk-helper dnsmasq dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub lib32-gst-plugins-base lib32-gst-plugins-good lib32-pipewire-jack gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va inotify-tools linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools net-tools networkmanager ntfs-3g pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
 
 # GNOME DESKTOP
 DESKTOP_SESSION="appmenu-gtk-module ark bluez bluez-cups bluez-obex bluez-utils breeze5 dolphin dolphin-plugins ebook-tools ffmpegthumbs firefox firewalld flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio-gdrive kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 partitionmanager plasma-wayland-protocols plasma5-integration phonon-qt5-vlc phonon-qt6-vlc power-profiles-daemon plasma power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan skanpage spectacle steam steam-native-runtime switcheroo-control tesseract-data-eus timeshift ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost xwaylandvideobridge yt-dlp"
@@ -86,13 +86,8 @@ initialize_system() {
     arch-chroot $MOUNT_DIR systemctl enable cronie.service
     arch-chroot $MOUNT_DIR systemctl enable cups.service
     arch-chroot $MOUNT_DIR systemctl enable cups-browsed.service
-    arch-chroot $MOUNT_DIR systemctl enable dbus-broker.service
     arch-chroot $MOUNT_DIR systemctl enable firewalld.service
-    arch-chroot $MOUNT_DIR systemctl enable grub-btrfsd.service
     arch-chroot $MOUNT_DIR systemctl enable NetworkManager.service
-    arch-chroot $MOUNT_DIR systemctl enable rtirq.service
-    arch-chroot $MOUNT_DIR systemctl enable rtirq-resume.service
-    arch-chroot $MOUNT_DIR systemctl enable rtkit-daemon.service
 
 }
 
@@ -112,7 +107,7 @@ initialize_computer_settings() {
 
     # Create the mkinitcpio file
     echo "# Extra modules to be loaded into the initramfs" > $MOUNT_DIR/etc/mkinitcpio.conf
-    echo "MODULES=()" >> $MOUNT_DIR/etc/mkinitcpio.conf
+    echo "MODULES=(btrfs)" >> $MOUNT_DIR/etc/mkinitcpio.conf
     echo "" >> $MOUNT_DIR/etc/mkinitcpio.conf
     echo "# Hooks used to configure modules" >> $MOUNT_DIR/etc/mkinitcpio.conf
     echo "HOOKS=(base udev autodetect microcode modconf kms keyboard keymap block filesystems fsck plymouth)" >> $MOUNT_DIR/etc/mkinitcpio.conf
@@ -140,10 +135,6 @@ partition_mapping() {
     if [[ "$PARTITION_TYPE" == "btrfs" ]]; then
         # Create BTRFS subvolumes
         btrfs subvolume create $MOUNT_DIR/@
-        btrfs subvolume create $MOUNT_DIR/@cache
-        btrfs subvolume create $MOUNT_DIR/@log
-        btrfs subvolume create $MOUNT_DIR/@opt
-        btrfs subvolume create $MOUNT_DIR/@srv
         if [[ ! -d "$MOUNT_DIR/@home" ]]; then
             btrfs subvolume create $MOUNT_DIR/@home
         fi
@@ -151,18 +142,6 @@ partition_mapping() {
         # Delete BTRFS subvolumes
         if [[ -d "$MOUNT_DIR/@" ]]; then
             btrfs subvolume delete $MOUNT_DIR/@
-        fi
-        if [[ -d "$MOUNT_DIR/@cache" ]]; then
-            btrfs subvolume delete $MOUNT_DIR/@cache
-        fi
-        if [[ -d "$MOUNT_DIR/@log" ]]; then
-            btrfs subvolume delete $MOUNT_DIR/@log
-        fi
-        if [[ -d "$MOUNT_DIR/@opt" ]]; then
-            btrfs subvolume delete $MOUNT_DIR/@opt
-        fi
-        if [[ -d "$MOUNT_DIR/@srv" ]]; then
-            btrfs subvolume delete $MOUNT_DIR/@srv
         fi
     fi
 
@@ -174,17 +153,9 @@ partition_mapping() {
 
     # Make system directories
     mkdir -p $MOUNT_DIR/home
-    mkdir -p $MOUNT_DIR/opt
-    mkdir -p $MOUNT_DIR/srv
-    mkdir -p $MOUNT_DIR/var/cache
-    mkdir -p $MOUNT_DIR/var/log
 
     # Mount BTRFS subvolumes
-    mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@cache $SYSTEM_ROOT $MOUNT_DIR/var/cache
     mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@home $SYSTEM_ROOT $MOUNT_DIR/home
-    mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@log $SYSTEM_ROOT $MOUNT_DIR/var/log
-    mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@opt $SYSTEM_ROOT $MOUNT_DIR/opt
-    mount -t btrfs -o rw,compress=zstd:6,relatime,subvol=@srv $SYSTEM_ROOT $MOUNT_DIR/srv
 
     # ESP system partition directory
     ESP_DIRECTORY="$MOUNT_DIR/boot/efi"
@@ -284,7 +255,7 @@ setup_gpu_drivers() {
         arch-chroot $MOUNT_DIR systemctl enable nvidia-persistenced.service
         arch-chroot $MOUNT_DIR systemctl enable nvidia-powerd.service
         # Inject drivers directly into kernel image
-        sed -i -e "s/MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/" $MOUNT_DIR/etc/mkinitcpio.conf
+        sed -i -e "s/MODULES=(btrfs)/MODULES=(btrfs nvidia nvidia_modeset nvidia_uvm nvidia_drm)/" $MOUNT_DIR/etc/mkinitcpio.conf
         # Rebulid linux kernel image
         arch-chroot $MOUNT_DIR mkinitcpio -p ${KERNEL}
     elif [[ "${GPU}" == "other" ]]; then
