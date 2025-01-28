@@ -77,6 +77,7 @@ initialize_system() {
     arch-chroot $MOUNT_DIR systemctl enable cups-browsed.service
     arch-chroot $MOUNT_DIR systemctl enable dbus-broker.service
     arch-chroot $MOUNT_DIR systemctl enable firewalld.service
+    arch-chroot $MOUNT_DIR systemctl enable grub-btrfsd.service
     arch-chroot $MOUNT_DIR systemctl enable NetworkManager.service
     arch-chroot $MOUNT_DIR systemctl enable rtirq.service
     arch-chroot $MOUNT_DIR systemctl enable rtirq-resume.service

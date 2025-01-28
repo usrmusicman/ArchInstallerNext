@@ -31,6 +31,7 @@ cachyos_post_install() {
     systemctl enable cups.service
     systemctl enable cups-browsed.service
     systemctl enable dbus-broker.service
+    systemctl enable grub-btrfsd.service
     systemctl enable NetworkManager.service
     systemctl enable rtirq.service
     systemctl enable rtirq-resume.service
