@@ -5,14 +5,28 @@
 ## Start of package lists
 
 # BASE SYSTEM
-BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cups cups-browsed cups-filters cups-pdf cups-pk-helper dbus-broker dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-ocl-icd lib32-pipewire-jack lib32-pipewire-v4l2 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g ocl-icd pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cups cups-browsed cups-filters cups-pdf cups-pk-helper dbus-broker dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-ocl-icd lib32-pipewire-jack lib32-pipewire-v4l2 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g ocl-icd pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq snapper sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
 
 # PLASMA DESKTOP
-DESKTOP_SESSION="appmenu-gtk-module breeze5 ebook-tools ffmpegthumbs flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio-gdrive kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb-git orca oxygen5 partitionmanager plasma plasma5-integration phonon-qt5-vlc phonon-qt6-vlc pocl power-profiles-daemon power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan simple-scan spectacle switcheroo-control ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xf86-input-evdev xf86-input-libinput yt-dlp"
+DESKTOP_SESSION="appmenu-gtk-module breeze5 btrfs-assistant ebook-tools ffmpegthumbs flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio-gdrive kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb-git orca oxygen5 partitionmanager plasma plasma5-integration phonon-qt5-vlc phonon-qt6-vlc pocl power-profiles-daemon power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan skanpage spectacle switcheroo-control tesseract-data-eus ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xf86-input-evdev xf86-input-libinput yt-dlp"
 
 ## End of package lists
 
-cachyos_post_install() {
+arch_post_install() {
+
+    # Chaotic Key Signature
+    CHAOTIC_KEYSIG="3056513887B78AEB"
+
+    # Recover Chaotic key signatures
+    arch-chroot $MOUNT_DIR pacman-key --recv-key ${CHAOTIC_KEYSIG} --keyserver keyserver.ubuntu.com
+    arch-chroot $MOUNT_DIR pacman-key --lsign-key ${CHAOTIC_KEYSIG}
+
+    # Install Chaotic repo packages
+    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+
+    # Install pacman.conf
+    install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
 
     # Install base system
     pacman -S --noconfirm $BASE_SYSTEM
@@ -27,7 +41,6 @@ cachyos_post_install() {
     systemctl enable avahi-daemon.service
     systemctl enable avahi-dnsconfd.service
     systemctl enable cpupower.service
-    systemctl enable cronie.service
     systemctl enable cups.service
     systemctl enable cups-browsed.service
     systemctl enable dbus-broker.service
@@ -42,7 +55,6 @@ cachyos_post_install() {
     gpasswd -a $USERNAME cups
     gpasswd -a $USERNAME realtime
     gpasswd -a $USERNAME video
-
 
 }
 
@@ -73,7 +85,7 @@ if [[ "$USER" == "root" ]]; then
     do
 
         clear
-        echo "CachyOS Post installer setup"
+        echo "Archlinux post installer setup"
         echo ""
         read -r -p "Do you want to run the post-install script (Type: yes or no): " MENU_OPTION
         echo ""
@@ -83,7 +95,7 @@ if [[ "$USER" == "root" ]]; then
         if [[ "$MENU_OPTION" == "yes" ]]; then
             clear
             echo ""
-            echo "Starting CachyOS post install..."
+            echo "Starting Archlinux post install..."
             clear
             cachyos_post_install
             sleep 2
