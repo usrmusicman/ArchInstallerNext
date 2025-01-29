@@ -2,37 +2,57 @@
 
 # <<-- Globals -->>
 
+## Graphics Driver
+
+# AMD DRIVERS
+AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
+
+# INTEL DRIVERS
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
+
+# NVIDIA DRIVERS
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
+
+# OTHER DRIVERS
+OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-virtio libva-mesa-driver libva-utils vulkan-virtio"
+
 ## Start of package lists
 
 # BASE SYSTEM
-BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cups cups-browsed cups-filters cups-pdf cups-pk-helper dbus-broker dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub grub-btrfs gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-ocl-icd lib32-pipewire-jack lib32-pipewire-v4l2 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g ocl-icd pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq snapper sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
+BASE_SYSTEM="7zip alsa-utils avahi bash-completion btrfs-progs cpupower cups cups-browsed cups-filters cups-pdf cups-pk-helper dbus-broker dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg firewalld git gnu-free-fonts grub gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-ocl-icd lib32-pipewire-jack lib32-pipewire-v4l2 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g ocl-icd pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pulse-native-provider realtime-privileges rtirq snapper sshfs sudo udisks2 udisks2-btrfs vim vim-runtime wget wireless-regdb wireplumber xfsprogs"
 
 # PLASMA DESKTOP
-DESKTOP_SESSION="appmenu-gtk-module breeze5 btrfs-assistant ebook-tools ffmpegthumbs flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio-gdrive kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb-git orca oxygen5 partitionmanager plasma plasma5-integration phonon-qt5-vlc phonon-qt6-vlc pocl power-profiles-daemon power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan skanpage spectacle switcheroo-control tesseract-data-eus ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xf86-input-evdev xf86-input-libinput yt-dlp"
+DESKTOP_SESSION="appmenu-gtk-module breeze5 btrfs-assistant ebook-tools ffmpegthumbs flatpak fwupd gamemode gst-libav gst-plugin-libcamera gst-plugins-espeak hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us i2c-tools icoutils kate kcalc kdeconnect kdegraphics-thumbnailers kdenetwork-filesharing kdialog keditbookmarks kimageformats kio-admin kio-extras kio-gdrive kio5-extras konsole kwalletmanager kwayland-integration lib32-gamemode lib32-mangohud libappimage libappindicator-gtk2 libappindicator-gtk3 libdbusmenu-glib libdbusmenu-gtk2 libdbusmenu-gtk3 libdbusmenu-qt5 libgpod libportal libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 mangohud noto-fonts noto-fonts-cjk noto-fonts-emoji openrgb orca oxygen5 partitionmanager plasma plasma5-integration phonon-qt5-vlc phonon-qt6-vlc pocl power-profiles-daemon power-profiles-daemon qbittorrent qpwgraph qt5-imageformats qt5-svg qt5-wayland qt6-imageformats qt6-multimedia-ffmpeg qt6-multimedia-gstreamer qt6-svg qt6-wayland quota-tools sane sane-airscan skanpage spectacle steam steam-native-runtime switcheroo-control tesseract-data-eus ttf-ms-fonts unrar usb_modeswitch usbguard xdg-desktop-portal-gtk xf86-input-evdev xf86-input-libinput yt-dlp"
 
 ## End of package lists
 
 arch_post_install() {
 
+    ## Initialize Keyring
+    pacman-key --init
+    pacman-key --populate archlinux
+    pacman-key --lsign-key archlinux
+
     # Chaotic Key Signature
     CHAOTIC_KEYSIG="3056513887B78AEB"
 
     # Recover Chaotic key signatures
-    arch-chroot $MOUNT_DIR pacman-key --recv-key ${CHAOTIC_KEYSIG} --keyserver keyserver.ubuntu.com
-    arch-chroot $MOUNT_DIR pacman-key --lsign-key ${CHAOTIC_KEYSIG}
+    pacman-key --recv-key ${CHAOTIC_KEYSIG} --keyserver keyserver.ubuntu.com
+    pacman-key --lsign-key ${CHAOTIC_KEYSIG}
 
     # Install Chaotic repo packages
-    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-    arch-chroot $MOUNT_DIR pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
 
     # Install pacman.conf
     install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
 
-    # Install base system
-    pacman -S --noconfirm $BASE_SYSTEM
+    ## Initialize Keyring Chaotic-AUR
+    pacman-key --populate chaotic
+    pacman-key --lsign-key chaotic
 
-    # Refresh package database (Chroot)
-    pacman -Syyuu --noconfirm
+    # Install base system
+    pacman -Syyuu --noconfirm $BASE_SYSTEM
 
     ## Make vim the default system-wide editor
     echo "EDITOR=/usr/bin/vim" >> $MOUNT_DIR/etc/environment
@@ -44,7 +64,6 @@ arch_post_install() {
     systemctl enable cups.service
     systemctl enable cups-browsed.service
     systemctl enable dbus-broker.service
-    systemctl enable grub-btrfsd.service
     systemctl enable NetworkManager.service
     systemctl enable rtirq.service
     systemctl enable rtirq-resume.service
@@ -60,7 +79,7 @@ arch_post_install() {
 setup_desktop_session() {
 
     # Install Plasma desktop
-    pacman -S --noconfirm $DESKTOP_SESSION
+    pacman -Syyuu --noconfirm $DESKTOP_SESSION
 
     # Enable system services
     systemctl enable bluetooth.service
@@ -69,8 +88,33 @@ setup_desktop_session() {
 
     # Add user to groups
     gpasswd -a $USERNAME flatpak
+    gpasswd -a $USERNAME gamemode
     gpasswd -a $USERNAME games
     gpasswd -a $USERNAME sddm
+
+}
+
+setup_gpu_drivers() {
+
+    # Install the display drivers
+    if [[ "${GPU}" == "amd" ]]; then
+        # Install AMD GPU drivers
+        pacman -Syyuu --noconfirm $AMDGPU_DRV
+    elif [[ "${GPU}" == "intel" ]]; then
+        # Install Intel GPU drivers
+        pacman -Syyuu --noconfirm $INTELGPU_DRV
+    elif [[ "${GPU}" == "nvidia" ]]; then
+        # Install Nvidia GPU drivers
+        pacman -Syyuu --noconfirm $NVIDIAGPU_DRV
+        # Enable Nvidia related services
+        systemctl enable nvidia-persistenced.service
+        systemctl enable nvidia-powerd.service
+        # Inject drivers directly into kernel image
+        sed -i -e "s/MODULES=(btrfs)/MODULES=(btrfs nvidia nvidia_modeset nvidia_uvm nvidia_drm)/" $MOUNT_DIR/etc/mkinitcpio.conf
+    elif [[ "${GPU}" == "other" ]]; then
+        # Install Intel GPU drivers
+        pacman -Syyuu --noconfirm $OTHERGPU_DRV
+    fi
 
 }
 
@@ -96,7 +140,7 @@ if [[ "$USER" == "root" ]]; then
             echo ""
             echo "Starting Archlinux post install..."
             clear
-            cachyos_post_install
+            arch_post_install
             sleep 2
             break
         elif [[ "$MENU_OPTION" == "no" ]]; then
@@ -128,6 +172,50 @@ if [[ "$USER" == "root" ]]; then
             setup_desktop_session
             echo ""
             echo "Installed the desktop environment..."
+            sleep 2
+            break
+        else
+            echo ""
+            echo "Type in a valid option"
+            sleep 2
+        fi
+
+    done
+
+    ## GPU driver installer
+    while :
+    do
+
+        clear
+        read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia, other, virtualbox): " GPU
+
+        # Check if a supported GPU is available
+        if [[ "${GPU}" == "amd" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "intel" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "nvidia" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
+            sleep 2
+            break
+        elif [[ "${GPU}" == "other" ]]; then
+            clear
+            setup_gpu_drivers
+            echo ""
+            echo "Installed GPU Drivers..."
             sleep 2
             break
         else
