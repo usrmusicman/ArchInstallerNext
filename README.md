@@ -1,2 +1,2 @@
 # ArchInstallerNext
-Archlinux Installer with Plasma (64-Bit only)
+Archlinux post installer with Chaotic-AUR support.
