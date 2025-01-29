@@ -48,7 +48,6 @@ arch_post_install() {
     systemctl enable NetworkManager.service
     systemctl enable rtirq.service
     systemctl enable rtirq-resume.service
-    systemctl enable rtkit-daemon.service
 
     # Add user to groups
     gpasswd -a $USERNAME audio
