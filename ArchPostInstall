@@ -109,8 +109,6 @@ setup_gpu_drivers() {
         # Enable Nvidia related services
         systemctl enable nvidia-persistenced.service
         systemctl enable nvidia-powerd.service
-        # Inject drivers directly into kernel image
-        sed -i -e "s/MODULES=(btrfs)/MODULES=(btrfs nvidia nvidia_modeset nvidia_uvm nvidia_drm)/" $MOUNT_DIR/etc/mkinitcpio.conf
     elif [[ "${GPU}" == "other" ]]; then
         # Install Intel GPU drivers
         pacman -Syyuu --noconfirm $OTHERGPU_DRV
