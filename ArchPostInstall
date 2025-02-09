@@ -18,8 +18,8 @@ OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-virtio libva-mesa-driver libv
 
 ## Start of package lists
 
-# BASE SYSTEM for GNOME
-BASE_SYSTEM="7zip adw-gtk-theme alsa-utils avahi bash-completion btrfs-progs bzip3 cpio cpupower cups cups-browsed cups-filters cups-pdf cups-pk-helper dbus-broker dosfstools efibootmgr exfatprogs f2fs-tools fastfetch fatresize ffmpeg ffmpeg4.4 file-roller flatpak fwupd gamemode geary git gnome-browser-connector gnu-free-fonts google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va helvum hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us icoutils lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-ocl-icd lib32-pipewire-jack lib32-pipewire-v4l2 libgpod libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager ntfs-3g ocl-icd pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth pocl power-profiles-daemon pulse-native-provider pulsemixer realtime-privileges rpmextract rtirq sane sane-airscan showtime simple-scan snapper squashfs-tools steam steam-native-runtime sudo system-config-printer ttf-ms-fonts udisks2 udisks2-btrfs unrar unzip usbguard vim vim-runtime wget wireless-regdb wireplumber xf86-input-evdev xf86-input-libinput xfsprogs yt-dlp zip"
+# BASE SYSTEM for PLASMA
+BASE_SYSTEM="7zip alsa-utils ark avahi bash-completion breeze5 btrfs-assistant btrfs-progs btrfsmaintenance cups cups-browsed cups-filters cups-pdf cups-pk-helper dbus-broker dolphin dolphin-plugins dosfstools efibootmgr elisa exfat-utils f2fs-tools fastfetch fatresize ffmpeg firewalld flatpak fwupd gamemode git gnu-free-fonts google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us icoutils kate keditbookmarks kid3 konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libgpod libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji ntfs-3g openrgb-git openrgb-plugin-effects-git openssh orca phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma5-integration plasma-meta plasma-wayland-protocols plymouth pocl power-profiles-daemon pulse-native-provider pulsemixer qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan simple-scan snapper squashfs-tools steam steam-native-runtime sudo system-config-printer thunderbird ttf-ms-fonts udisks2 udisks2-btrfs unrar unzip usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xfsprogs xorg-xauth xorg-xhost yt-dlp zip"
 
 ## End of package lists
 
@@ -67,6 +67,7 @@ arch_post_install() {
     systemctl enable power-profiles-daemon.service
     systemctl enable rtirq.service
     systemctl enable rtirq-resume.service
+    systemctl enable sddm.service
 
     # Add user to groups
     gpasswd -a $USERNAME audio
@@ -99,6 +100,9 @@ setup_gpu_drivers() {
         # Install Intel GPU drivers
         pacman -Syyuu --noconfirm $OTHERGPU_DRV
     fi
+    
+    # Add opencl icd loader package
+    pacman -Syyuu --noconfirm lib32-ocl-icd ocl-icd
 
 }
 
