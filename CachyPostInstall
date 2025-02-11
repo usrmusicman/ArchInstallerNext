@@ -1,0 +1,83 @@
+#!/bin/sh
+
+# <<-- Globals -->>
+
+# BASE SYSTEM for PLASMA
+BASE_SYSTEM="7zip alsa-utils ark avahi bash-completion breeze5 btrfs-assistant btrfs-progs dolphin dolphin-plugins efibootmgr elisa fastfetch fatresize ffmpeg flatpak fwupd gamemode git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview icoutils ifuse kate kdialog keditbookmarks kid3 kio-admin konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libgpod libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openrgb-git openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma5-integration plasma-meta plasma-wayland-protocols plymouth pocl power-profiles-daemon pulse-native-provider pulsemixer qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan simple-scan snapper steam steam-native-runtime sudo system-config-printer thunderbird ttf-ms-fonts usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xfsprogs xorg-xauth xorg-xhost yay yt-dlp"
+
+## End of package lists
+
+arch_post_install() {
+
+    # Install base system
+    pacman -Syyuu --noconfirm $BASE_SYSTEM
+
+    ## Make vim the default system-wide editor
+    echo "EDITOR=/usr/bin/vim" >> $MOUNT_DIR/etc/environment
+
+    # Enable system services
+    systemctl enable avahi-daemon.service
+    systemctl enable avahi-dnsconfd.service
+    systemctl enable bluetooth.service
+    systemctl enable NetworkManager.service
+    systemctl enable power-profiles-daemon.service
+    systemctl enable rtirq.service
+    systemctl enable rtirq-resume.service
+    systemctl enable sddm.service
+
+    # Add user to groups
+    gpasswd -a $USERNAME audio
+    gpasswd -a $USERNAME cups
+    gpasswd -a $USERNAME flatpak
+    gpasswd -a $USERNAME fwupd
+    gpasswd -a $USERNAME gamemode
+    gpasswd -a $USERNAME games
+    gpasswd -a $USERNAME realtime
+    gpasswd -a $USERNAME sddm
+    gpasswd -a $USERNAME video
+    gpasswd -a $USERNAME wheel
+
+    # Add opencl icd loader package
+    pacman -Syyuu --noconfirm lib32-ocl-icd ocl-icd
+
+}
+
+# <<-- Main Menu -->>
+
+# Make sure to run the script as root
+if [[ "$USER" == "root" ]]; then
+
+    ## Intialize the bootstrap environment
+    while :
+    do
+
+        clear
+        echo "Archlinux post installer setup"
+        echo ""
+        read -r -p "Do you want to run the post-install script (Type: yes or no): " MENU_OPTION
+        echo ""
+        read -r -p "Type in your username (i.e. myusername): " USERNAME
+        clear
+
+        if [[ "$MENU_OPTION" == "yes" ]]; then
+            clear
+            echo ""
+            echo "Starting Archlinux post install..."
+            clear
+            arch_post_install
+            sleep 2
+            break
+        elif [[ "$MENU_OPTION" == "no" ]]; then
+            sleep 2
+            exit
+        else
+            echo ""
+            echo "Type in a valid option, restarting...."
+            sleep 5
+        fi
+
+    done
+
+else
+    echo "Please be root to run this script..."
+fi
