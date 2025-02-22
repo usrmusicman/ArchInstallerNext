@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [[ $USER == "root" ]]; then
+	pacman -Syyuu --noconfirm btrfs-assistant btrfsmaintenance snapper
+	umount /.snapshots
+	rmdir /.snapshots
+	snapper -c root create-config /
+	echo "restarting in 10 seconds"
+	sleep 10
+	systemctl reboot
+else
+	echo "Script must be run as root..."
+fi
