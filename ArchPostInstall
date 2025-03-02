@@ -19,7 +19,7 @@ OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-virtio libva-mesa-driver libv
 ## Start of package lists
 
 # BASE SYSTEM for PLASMA
-BASE_SYSTEM="7zip alsa-utils ark avahi bash-completion breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins efibootmgr elisa fastfetch fatresize ffmpeg firewalld flatpak fwupd gamemode git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview icoutils ifuse kate kdialog keditbookmarks kid3 kio-admin konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libgpod libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openrgb-git openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma5-integration plasma-meta plasma-wayland-protocols plymouth pocl power-profiles-daemon pulse-native-provider pulsemixer qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan simple-scan steam steam-native-runtime sudo system-config-printer thunderbird ttf-ms-fonts usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xfsprogs xorg-xauth xorg-xhost yay yt-dlp"
+BASE_SYSTEM="7zip alsa-utils ark avahi bash-completion breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins efibootmgr elisa fastfetch fatresize ffmpeg firewalld flatpak fwupd gamemode git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview icoutils ifuse kate kdialog keditbookmarks kf6 kid3 kio-admin konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libgpod libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 libva-utils linux-firmware man-db man-pages mkinitcpio mtools multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma5-integration plasma-meta plasma-wayland-protocols plymouth pocl power-profiles-daemon pulse-native-provider pulsemixer qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan simple-scan steam steam-native-runtime sudo system-config-printer thunderbird usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xfsprogs xorg-xauth xorg-xhost yt-dlp"
 
 ## End of package lists
 
@@ -30,29 +30,14 @@ arch_post_install() {
     pacman-key --populate archlinux
     pacman-key --lsign-key archlinux
 
-    # Chaotic Key Signature
-    CHAOTIC_KEYSIG="3056513887B78AEB"
-
-    # Recover Chaotic key signatures
-    pacman-key --recv-key ${CHAOTIC_KEYSIG} --keyserver keyserver.ubuntu.com
-    pacman-key --lsign-key ${CHAOTIC_KEYSIG}
-
-    # Install Chaotic repo packages
-    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
-
     # Install pacman.conf
     install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
 
-    ## Initialize Keyring Chaotic-AUR
-    pacman-key --populate chaotic
-    pacman-key --lsign-key chaotic
-
-    # Install base system
-    pacman -Syyuu --noconfirm $BASE_SYSTEM
-
     ## Make vim the default system-wide editor
     echo "EDITOR=/usr/bin/vim" >> $MOUNT_DIR/etc/environment
+
+    ## BTRFS early mkinitcpio module
+    install -Dm644 mkinitcpio/60-btrfs.conf /etc/mkinitcpio.conf.d/60-btrfs.conf
 
     # Enable system services
     systemctl enable avahi-daemon.service
@@ -93,9 +78,7 @@ setup_gpu_drivers() {
     elif [[ "${GPU}" == "nvidia" ]]; then
         # Install Nvidia GPU drivers
         pacman -Syyuu --noconfirm $NVIDIAGPU_DRV
-        # Enable Nvidia related services
-        systemctl enable nvidia-persistenced.service
-        systemctl enable nvidia-powerd.service
+        install -Dm644 mkinitcpio/80-nvidia.conf /etc/mkinitcpio.conf.d/80-nvidia.conf
     elif [[ "${GPU}" == "other" ]]; then
         # Install Intel GPU drivers
         pacman -Syyuu --noconfirm $OTHERGPU_DRV
