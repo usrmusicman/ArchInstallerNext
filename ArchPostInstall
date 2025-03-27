@@ -5,13 +5,13 @@
 ## Graphics Driver
 
 # AMD DRIVERS
-AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa-driver libva-utils ocl-icd rocm-opencl-runtime rocminfo vulkan-radeon"
+AMDGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-radeon libva-mesa-driver libva-utils rocm-opencl-runtime rocminfo vulkan-radeon"
 
 # INTEL DRIVERS
-INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel libva-utils ocl-icd vpl-gpu-rt vulkan-intel"
+INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-vulkan-intel libva-utils vpl-gpu-rt vulkan-intel"
 
 # NVIDIA DRIVERS
-NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia lib32-nvidia-cg-toolkit lib32-vulkan-nouveau libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-cg-toolkit nvidia-open-dkms nvidia-settings nvidia-utils ocl-icd opencl-nvidia vdpauinfo vulkan-nouveau"
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils opencl-nvidia vdpauinfo"
 
 # OTHER DRIVERS
 OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-virtio libva-mesa-driver libva-utils vulkan-virtio"
@@ -19,7 +19,7 @@ OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-virtio libva-mesa-driver libv
 ## Start of package lists
 
 # BASE SYSTEM for PLASMA
-BASE_SYSTEM="7zip alsa-utils ark avahi bash-completion breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins efibootmgr elisa fastfetch fatresize ffmpeg firewalld flatpak fwupd gamemode git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va hunspell gwenview icoutils ifuse kate kdialog keditbookmarks kf6 kid3 kio-admin konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libdvdcss libgpod libportal-gtk3 libportal-gtk4 libportal-qt5 libportal-qt6 libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware mtools multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma5-integration plasma-meta plasma-wayland-protocols plymouth pocl power-profiles-daemon pulse-native-provider pulsemixer qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan simple-scan steam steam-native-runtime sudo system-config-printer thunderbird usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xfsprogs xorg-xauth xorg-xhost yt-dlp"
+BASE_SYSTEM="7zip alsa-utils ark avahi bash-completion breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins elisa fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firewalld flatpak fwupd gamemode git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us icoutils ifuse kamera kate kdialog keditbookmarks kid3 kimageformats kio-admin konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libdvdcss libgpod libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth pocl power-profiles-daemon pulse-native-provider qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan simple-scan steam steam-native-runtime sudo system-config-printer thunderbird usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost yt-dlp"
 
 ## End of package lists
 
@@ -33,12 +33,11 @@ arch_post_install() {
     pacman-key --populate archlinux
     pacman-key --lsign-key archlinux
     pacman-key --recv-key $CHAOTIC_KEY --keyserver keyserver.ubuntu.com
-    pacman-key --populate chaotic
     pacman-key --lsign-key $CHAOTIC_KEY
 
     ## Chaotic AUR meta packages
-    pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-    pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
 
     # Install pacman.conf
     install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
@@ -48,6 +47,9 @@ arch_post_install() {
 
     ## BTRFS early mkinitcpio module
     install -Dm644 mkinitcpio/60-btrfs.conf /etc/mkinitcpio.conf.d/60-btrfs.conf
+    
+    # Install system packages
+	pacman -Syyuu --noconfirm $BASE_SYSTEM
 
     # Enable system services
     systemctl enable avahi-daemon.service
@@ -58,9 +60,6 @@ arch_post_install() {
     systemctl enable firewalld.service
     systemctl enable NetworkManager.service
     systemctl enable power-profiles-daemon.service
-    systemctl enable rtirq.service
-    systemctl enable rtirq-resume.service
-    systemctl enable sddm.service
 
     # Add user to groups
     gpasswd -a $USERNAME audio
