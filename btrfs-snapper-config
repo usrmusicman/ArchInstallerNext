@@ -1,10 +1,13 @@
 #!/bin/sh
 
 if [[ $USER == "root" ]]; then
-	pacman -Syyuu --noconfirm btrfs-assistant btrfsmaintenance snapper
+	pacman -Syyuu --noconfirm grub-btrfs snapper inotify-tools
 	umount /.snapshots
 	rmdir /.snapshots
 	snapper -c root create-config /
+	systemctl enable grub-btrfsd.service
+	systemctl enable snapper-backup.timer
+	systemctl enable snapper-cleanup.timer
 	echo "restarting in 10 seconds"
 	sleep 10
 	systemctl reboot
