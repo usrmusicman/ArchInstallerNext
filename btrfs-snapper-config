@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [[ $USER == "root" ]]; then
-	pacman -Syyuu --noconfirm btrfs-progs grub-btrfs snapper inotify-tools
+	pacman -Syyuu --noconfirm btrfs-assistant btrfs-progs btrfsmaintenance grub-btrfs snapper inotify-tools
 	umount /.snapshots
 	rmdir /.snapshots
 	snapper -c root create-config /
