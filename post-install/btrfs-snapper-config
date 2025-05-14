@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [[ $USER == "root" ]]; then
-	pacman -Syyuu --noconfirm btrfs-assistant btrfs-progs btrfsmaintenance grub-btrfs snapper inotify-tools
+	pacman -Syyuu --noconfirm inotify-tools snapper
 	umount /.snapshots
 	rmdir /.snapshots
 	snapper -c root create-config /
@@ -10,6 +10,7 @@ if [[ $USER == "root" ]]; then
 	systemctl enable snapper-cleanup.timer
 	echo "restarting in 10 seconds"
 	sleep 10
+	rm ${PWD}/btrfs-snapper-config
 	systemctl reboot
 else
 	echo "Script must be run as root..."

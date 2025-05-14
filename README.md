@@ -1,2 +1,2 @@
 # ArchInstallerNext
-Archlinux post installer with Chaotic-AUR support.
+Archlinux installer with Chaotic-AUR support.
