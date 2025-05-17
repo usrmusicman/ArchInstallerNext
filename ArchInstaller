@@ -13,94 +13,241 @@ INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-vulk
 # NVIDIA DRIVERS
 NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils opencl-nvidia vdpauinfo"
 
-# OTHER DRIVERS
-OTHERGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-virtio libva-mesa-driver libva-utils pocl vulkan-virtio"
-
 ## Start of package lists
 
-# BASE SYSTEM for PLASMA
-BASE_SYSTEM="7zip alsa-utils ark bash-completion breeze5 cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins dosfstools elisa fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox firewalld flatpak fwupd gamemode git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us icoutils ifuse kamera kate kdialog keditbookmarks kid3 kimageformats kio-admin konsole lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libdvdcss libgpod libva-utils linux-firmware man-db man-pages mkinitcpio mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plasma5-integration plymouth power-profiles-daemon pulse-native-provider qt5-multimedia qt6-multimedia qpwgraph realtime-privileges rtirq sane sane-airscan skanpage steam steam-native-runtime sudo system-config-printer tesseract-data-eus thunderbird usbguard vim vim-runtime wget wireless-regdb wireplumber xdg-desktop-portal-gtk xdg-user-dirs-gtk xf86-input-evdev xf86-input-libinput xorg-xauth xorg-xhost yt-dlp"
+# Archlinux with GNOME base
+BASE_SYSTEM="7zip adw-gtk-theme alsa-utils argyllcms aspell aspell-en baobab bash-completion bind bluez bluez-cups bluez-hid2hci bluez-mesh bluez-obex bluez-tools bluez-utils btrfs-progs bzip3 cdrtools cpio cups cups-browsed cups-filters cups-pdf cups-pk-helper decibels dosfstools dpkg efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 file-roller firefox firewalld flatpak fluidsynth fwupd gamemode gdm geary git gnome-backgrounds gnome-browser-connector gnome-calculator gnome-calendar gnome-characters gnome-color-manager gnome-connections gnome-console gnome-contacts gnome-control-center gnome-disk-utility gnome-epub-thumbnailer gnome-firmware gnome-font-viewer gnome-info-collect gnome-keyring gnome-logs gnome-nettool gnome-online-accounts gnome-power-manager gnome-remote-desktop gnome-session gnome-settings-daemon gnome-shell gnome-software gnome-system-monitor gnome-text-editor gnome-tweaks gnome-usage gnome-user-share gnome-weather gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gvfs gvfs-afc gvfs-dnssd gvfs-goa gvfs-google gvfs-gphoto2 gvfs-mtp gvfs-nfs gvfs-onedrive gvfs-smb gvfs-wsdd handbrake helvum hspell hunspell hunspell-en_au hunspell-en_ca hunspell-en_gb hunspell-en_us key-rack lib32-fluidsynth lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libdvdcss libgpod libva-utils linux-firmware lollypop loupe malcontent man-db man-pages multilib-devel mutter nautilus nautilus-image-converter nautilus-share net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g nuspell openssh orca papers pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plymouth polari power-profiles-daemon pulsemixer pulse-native-provider realtime-privileges rpmextract rygel sane sane-airscan scx-scheds showtime simple-scan soundconverter soundfont-fluid squashfs-tools steam sudo switcheroo-control system-config-printer ttf-ms-fonts udisks2-btrfs unrar unzip usbguard vim vim-runtime wget wireless-regdb x11-ssh-askpass xdg-desktop-portal-gnome xdg-desktop-portal-gtk xdg-user-dirs-gtk xorg-xauth xorg-server xorg-xhost yelp yt-dlp zip"
 
 ## End of package lists
 
-arch_post_install() {
-
-    # Global Variables
-    CHAOTIC_KEY="3056513887B78AEB"
-
-    ## Initialize Keyrings
-    pacman-key --init
-    pacman-key --populate archlinux
-    pacman-key --lsign-key archlinux
-    pacman-key --recv-key $CHAOTIC_KEY --keyserver keyserver.ubuntu.com
-    pacman-key --lsign-key $CHAOTIC_KEY
-
-    ## Chaotic AUR meta packages
-    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
-
-    # Install pacman.conf
-    install -Dm644 pacman.conf $MOUNT_DIR/etc/pacman.conf
-
-    ## Make vim the default system-wide editor
-    echo "EDITOR=/usr/bin/vim" >> $MOUNT_DIR/etc/environment
-
-    ## BTRFS early mkinitcpio module
-    install -Dm644 mkinitcpio/60-btrfs.conf /etc/mkinitcpio.conf.d/60-btrfs.conf
-    
-    # Install system packages
-	pacman -Syyuu --noconfirm $BASE_SYSTEM
-
-    # Enable system services
-    systemctl enable avahi-daemon.service
-    systemctl enable avahi-dnsconfd.service
-    systemctl enable bluetooth.service
-    systemctl enable cups.service
-    systemctl enable cups-browsed.service
-    systemctl enable firewalld.service
-    systemctl enable NetworkManager.service
-    systemctl enable power-profiles-daemon.service
-
-    # Add user to groups
-    gpasswd -a $USERNAME audio
-    gpasswd -a $USERNAME cups
-    gpasswd -a $USERNAME flatpak
-    gpasswd -a $USERNAME fwupd
-    gpasswd -a $USERNAME gamemode
-    gpasswd -a $USERNAME games
-    gpasswd -a $USERNAME realtime
-    gpasswd -a $USERNAME sddm
-    gpasswd -a $USERNAME video
-    gpasswd -a $USERNAME wheel
-
+format_system_partitions() {
+	
+	# Format ESP boot partition
+	mkfs.vfat -F32 -n Arch_ESP $BOOT_PARTITION
+	
+	# Format system install partition
+	mkfs.btrfs -L Archlinux -f $SYSTEM_PARTITION
+	
 }
 
-setup_gpu_drivers() {
+main_installation() {
+    
+    # Initialize system
+    pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo zram-generator
 
-    # Install the display drivers
+    # Initialize Keyrings
+    arch-chroot ${MOUNT_DIR} pacman-key --init
+    arch-chroot ${MOUNT_DIR} pacman-key --populate archlinux
+    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key archlinux
+    
+    # Generate fstab
+	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
+	
+    # Install BTRFS early mkinitcpio module
+    install -Dm644 mkinitcpio/60-btrfs.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/60-btrfs.conf
+    
+    # Install pacman.conf
+    install -Dm644 pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
+    
+    # Install ZRAM generator configuration 
+    install -Dm644 systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
+
+	# Install CPU microcode
+    	if [[ "${CPU}" == "amd" ]]; then
+        
+        # Install AMD microcode
+        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
+        
+    	elif [[ "${CPU}" == "intel" ]]; then
+        
+        # Install Intel microcode
+        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
+        
+    	fi
+
+	# Install the display drivers
     if [[ "${GPU}" == "amd" ]]; then
-        # Install AMD GPU drivers
-        pacman -Syyuu --noconfirm $AMDGPU_DRV
+        
+		# Install AMD GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
+		    
+		# Add opencl icd loader package
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+        
     elif [[ "${GPU}" == "intel" ]]; then
-        # Install Intel GPU drivers
-        pacman -Syyuu --noconfirm $INTELGPU_DRV
+        
+		# Install Intel GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
+		    
+		# Add opencl icd loader package
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+        
     elif [[ "${GPU}" == "nvidia" ]]; then
-        # Install Nvidia GPU drivers
-        pacman -Syyuu --noconfirm $NVIDIAGPU_DRV
-        install -Dm644 mkinitcpio/80-nvidia.conf /etc/mkinitcpio.conf.d/80-nvidia.conf
+        
+	    # Install Nvidia GPU drivers
+	    arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
+	    
+	    # Add opencl icd loader package
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+        
+        # Install mkinitcpio early kernel module hooks
+        install -Dm644 mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
 
         # Enable nvidia driver related services
-        systemctl enable nvidia-persistenced.service
-        systemctl enable nvidia-powerd.service
-        systemctl enable nvidia-suspend-then-hibernate.service
-
-    elif [[ "${GPU}" == "other" ]]; then
-        # Install Intel GPU drivers
-        pacman -Syyuu --noconfirm $OTHERGPU_DRV
+        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
+        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-powerd.service
+        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend-then-hibernate.service
+        
     fi
+
+	# Create mirrorlist file with your country's mirrors
+    arch-chroot ${MOUNT_DIR} reflector -p https -c ${COUNTRY_CODE} > $MOUNT_DIR/etc/pacman.d/mirrorlist
     
-    # Add opencl icd loader package
-    pacman -Syyuu --noconfirm lib32-ocl-icd ocl-icd
+    # Install desired kernel and headers
+	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm ${KERNEL} ${KERNEL}-headers
+	
+	# Install system packages
+	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $BASE_SYSTEM
+
+    # Enable system services
+    arch-chroot ${MOUNT_DIR} systemctl enable avahi-daemon.service
+    arch-chroot ${MOUNT_DIR} systemctl enable avahi-dnsconfd.service
+    arch-chroot ${MOUNT_DIR} systemctl enable bluetooth.service
+    arch-chroot ${MOUNT_DIR} systemctl enable cups.service
+    arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
+    arch-chroot ${MOUNT_DIR} systemctl enable firewalld.service
+    arch-chroot ${MOUNT_DIR} systemctl enable gdm.service
+    arch-chroot ${MOUNT_DIR} systemctl enable NetworkManager.service
+    arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
+	
+	# Make vim the default system-wide editor
+    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
+	
+	# Add tmpfs to the fstab
+	echo "" >> $MOUNT_DIR/etc/fstab
+	echo "# tmpfs mount" >> $MOUNT_DIR/etc/fstab
+	echo "tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0" >> $MOUNT_DIR/etc/fstab
+	
+	# Add ZRAM entry to your fstab
+	echo "" >> $MOUNT_DIR/etc/fstab
+	echo "# zram swap" >> $MOUNT_DIR/etc/fstab
+	echo "/dev/zram0 none swap defaults,discard,pri=100 0 0" >> $MOUNT_DIR/etc/fstab
+	
+	# Make the fluid soundfont the default for midi playback
+	echo "SOUND_FONT=/usr/share/soundfonts/FluidR3_GM.sf2" > $MOUNT_DIR/etc/conf.d/fluidsynth
+	
+	# Enable wheel group for administrator tasks
+    sed -i -e "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" $MOUNT_DIR/etc/sudoers
+    
+    # Enable network roaming discovery with avahi
+    sed -i -e "s/mymachines/mymachines mdns_minimal [NOTFOUND=return]/" $MOUNT_DIR/etc/nsswitch.conf
+
+	# Create user with password
+	arch-chroot ${MOUNT_DIR} useradd -m $USERNAME
+	arch-chroot ${MOUNT_DIR} usermod --password $(echo $PASSWORD | openssl passwd -1 -stdin) $USERNAME
+
+    # Add user to groups
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME audio
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME cups
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME flatpak
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME fwupd
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME gamemode
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME gdm
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME games
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME realtime
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME video
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME wheel
+    
+    # Add a hostname for the machine
+    echo "$HOSTNAME" > ${MOUNT_DIR}/etc/hostname
+    
+    # Set your timezone
+    arch-chroot ${MOUNT_DIR} timedatectl set-timezone $TIMEZONE
+    arch-chroot ${MOUNT_DIR} ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+	
+	# Set your system locale
+	arch-chroot ${MOUNT_DIR} localectl set-locale LANG=${LOCALE}.UTF-8
+	arch-chroot ${MOUNT_DIR} locale-gen
+	
+}
+
+setup_bootloader() {
+	
+	# System partition UUID
+	ROOT_UUID=`lsblk -o UUID ${SYSTEM_PARTITION} | tail -1`
+	
+	# Install microcode
+	if [[ "${CPU}" == "amd" ]]; then
+		
+		# AMD EFISTUB entry
+		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+	
+	elif [[ "${CPU}" == "intel" ]]; then
+		
+		# Intel EFISTUB entry
+		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+		
+	else
+	
+		# EFISTUB entry no microcode
+		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+	
+	fi
+		
+}
+
+system_mapping() {
+	
+	# Mount system partition
+	mount $SYSTEM_PARTITION $MOUNT_DIR
+	
+	# Setup subvolumes
+	btrfs subvolume create ${MOUNT_DIR}/@
+	btrfs subvolume create ${MOUNT_DIR}/@.snapshots
+	btrfs subvolume create ${MOUNT_DIR}/@home
+	btrfs subvolume create ${MOUNT_DIR}/@opt
+	btrfs subvolume create ${MOUNT_DIR}/@root
+	btrfs subvolume create ${MOUNT_DIR}/@srv
+	btrfs subvolume create ${MOUNT_DIR}/@var_cache
+	btrfs subvolume create ${MOUNT_DIR}/@var_log
+	btrfs subvolume create ${MOUNT_DIR}/@var_tmp
+	
+	# Unmount system partition
+	umount -lf $MOUNT_DIR
+	
+	# Mount root BTRFS subvolume
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@ $SYSTEM_PARTITION $MOUNT_DIR
+	
+	# Make mount directories
+	mkdir -p ${MOUNT_DIR}/.snapshots
+	mkdir -p ${MOUNT_DIR}/boot
+	mkdir -p ${MOUNT_DIR}/home
+	mkdir -p ${MOUNT_DIR}/opt
+	mkdir -p ${MOUNT_DIR}/root
+	mkdir -p ${MOUNT_DIR}/srv
+	mkdir -p ${MOUNT_DIR}/var/cache
+	mkdir -p ${MOUNT_DIR}/var/log
+	mkdir -p ${MOUNT_DIR}/var/tmp
+	
+	# Mount other BTRFS subvolumes
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@.snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@home $SYSTEM_PARTITION $MOUNT_DIR/home
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@opt $SYSTEM_PARTITION $MOUNT_DIR/opt
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@root $SYSTEM_PARTITION $MOUNT_DIR/root
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@srv $SYSTEM_PARTITION $MOUNT_DIR/srv
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@var_cache $SYSTEM_PARTITION $MOUNT_DIR/var/cache
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@var_log $SYSTEM_PARTITION $MOUNT_DIR/var/log
+	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@var_tmp $SYSTEM_PARTITION $MOUNT_DIR/var/tmp
+	
+	# Mount boot partition
+	mount $BOOT_PARTITION $MOUNT_DIR/boot
+	
+}
+
+unmount_chroot() {
+	
+	# Unmount chroot
+	umount -lf $MOUNT_DIR
 
 }
 
@@ -109,81 +256,107 @@ setup_gpu_drivers() {
 # Make sure to run the script as root
 if [[ "$USER" == "root" ]]; then
 
-    ## Intialize the bootstrap environment
-    while :
-    do
+	# Main Wizard
+    clear
+    echo "Archlinux installer setup wizard"
+    echo ""
+    lsblk -o TYPE,LABEL,FSTYPE,PATH
+    echo ""
+    read -r -p "Type in the disk name you want to install the system on (i.e. /dev/sda): " INSTALL_DISK
+    read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
+    read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
+    read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
+    read -r -p "Type in the CPU name you have in your system (Options: amd, intel): " CPU
+    read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia): " GPU
+    read -r -p "Type in your username (i.e. myusername): " USERNAME
+    read -s -p "Type in ${USERNAME}'s password (i.e. mypassword): " PASSWORD
+    echo ""
+    read -r -p "Type in your computer's host name (i.e. mycomputer): " HOSTNAME
+    read -r -p "Type in the kernel you want to install (i.e. linux or linux-zen): " KERNEL
+    clear
+    cat /etc/locale.gen | more
+    read -r -p "Type in your system locale name (i.e. en_US): " LOCALE
+    read -r -p "Type in a country code (i.e. ca, us, uk): " COUNTRY_CODE
+    clear
+    timedatectl list-timezones
+    read -r -p "Type in your system's timezone (i.e. America/Toronto): " TIMEZONE
+    clear
 
-        clear
-        echo "Archlinux post installer setup"
-        echo ""
-        read -r -p "Do you want to run the post-install script (Type: yes or no): " MENU_OPTION
-        echo ""
-        read -r -p "Type in your username (i.e. myusername): " USERNAME
-        clear
+	# Confirmation screen 
+    echo "System installation disk: $INSTALL_DISK"
+    echo "Boot partition: $BOOT_PARTITION"
+    echo "System root partition: $SYSTEM_PARTITION"
+    echo "Install mountpoint: $MOUNT_DIR"
+    echo "CPU: $CPU"
+    echo "GPU: $GPU"
+    echo "Username: $USERNAME"
+    echo "Hostname: $HOSTNAME"
+    echo "Kernel to install: $KERNEL"
+    echo "System locale: LANG=${LOCALE}.UTF-8"
+    echo "System country code: $COUNTRY_CODE"
+    echo "System timezone: $TIMEZONE"
+    echo ""
+    read -r -p "Is this information correct yes or no? " CONFIRM
+    clear
+    
+    if [[ "$CONFIRM" == "yes" ]]; then
 
-        if [[ "$MENU_OPTION" == "yes" ]]; then
-            clear
-            echo ""
-            echo "Starting Archlinux post install..."
-            clear
-            arch_post_install
-            sleep 2
-            break
-        elif [[ "$MENU_OPTION" == "no" ]]; then
-            sleep 2
-            exit
-        else
-            echo ""
-            echo "Type in a valid option, restarting...."
-            sleep 5
-        fi
+		# Installation progress dialog
+		echo 'Install in progress!!'
+		echo ""
+		sleep 5
+		clear
+		
+		# Format partitions
+		echo "Formatting partitions..."
+		echo ""
+		format_system_partitions
+		sleep 5
+		clear
+		
+		# Create install mapping
+		echo "Creating system map..."
+		echo ""
+		system_mapping
+		sleep 5
+		clear
+		
+		# Main system installation
+		echo "Installing system..."
+		echo ""
+		main_installation
+		sleep 5
+		clear
+		
+		# Setup the bootloader
+		echo "Setting up bootloader..."
+		echo ""
+		setup_bootloader
+		sleep 5
+		clear
+		
+		# Unmount current system
+		echo "Unmount system install..."
+		echo ""
+		unmount_chroot
+		sleep 5
+		clear
+		
+		# Installation complete message
+		echo 'Install Complete!!!'
+		sleep 5
+		clear
 
-    done
+	else
 
-    ## GPU driver installer
-    while :
-    do
+		# exit script
+		exit
 
-        clear
-        read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia, other, virtualbox): " GPU
-
-        # Check if a supported GPU is available
-        if [[ "${GPU}" == "amd" ]]; then
-            clear
-            setup_gpu_drivers
-            echo ""
-            echo "Installed GPU Drivers..."
-            sleep 2
-            break
-        elif [[ "${GPU}" == "intel" ]]; then
-            clear
-            setup_gpu_drivers
-            echo ""
-            echo "Installed GPU Drivers..."
-            sleep 2
-            break
-        elif [[ "${GPU}" == "nvidia" ]]; then
-            clear
-            setup_gpu_drivers
-            echo ""
-            echo "Installed GPU Drivers..."
-            sleep 2
-            break
-        elif [[ "${GPU}" == "other" ]]; then
-            clear
-            setup_gpu_drivers
-            echo ""
-            echo "Installed GPU Drivers..."
-            sleep 2
-            break
-        else
-            echo ""
-            echo "Type in a valid option"
-            sleep 2
-        fi
-
-    done
+	fi
 
 else
+	
+	# Check if the user is root
     echo "Please be root to run this script..."
+
 fi
