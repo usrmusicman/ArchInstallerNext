@@ -16,7 +16,7 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-
 ## Start of package lists
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark aspell aspell-en bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins dosfstools efibootmgr elisa espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox firewalld flatpak flatpak-kcm fluidsynth fwupd gamemode git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hspell hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g nuspell okular openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan scx-scheds skanpage soundfont-fluid steam sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs usbguard unarchiver unrar vim vim-runtime vlc wget wireless-regdb wireplumber xdg-user-dirs-gtk xorg-xauth xorg-xhost yt-dlp"
+BASE_SYSTEM="7zip alsa-utils argyllcms ark aspell aspell-en bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins dosfstools efibootmgr elisa espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox firewalld flatpak flatpak-kcm fluidsynth fwupd gamemode git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hspell hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g nuspell okular openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan scx-scheds skanpage soundfont-fluid steam sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs usbguard unarchiver unrar vim vim-runtime vlc wget wireless-regdb wireplumber xdg-user-dirs-gtk xorg-xauth xorg-xhost yt-dlp"
 
 ## End of package lists
 
@@ -34,21 +34,12 @@ main_installation() {
     
     # Initialize system
     pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo zram-generator
-
-	# Global Variables
-    CHAOTIC_KEY="3056513887B78AEB"
-
+    
     ## Initialize Keyrings
     arch-chroot ${MOUNT_DIR} pacman-key --init
     arch-chroot ${MOUNT_DIR} pacman-key --populate archlinux
     arch-chroot ${MOUNT_DIR} pacman-key --lsign-key archlinux
-    arch-chroot ${MOUNT_DIR} pacman-key --recv-key $CHAOTIC_KEY --keyserver keyserver.ubuntu.com
-    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key $CHAOTIC_KEY
 
-    ## Chaotic AUR meta packages
-    arch-chroot ${MOUNT_DIR} pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-    arch-chroot ${MOUNT_DIR} pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
-    
     # Generate fstab
 	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
 	
