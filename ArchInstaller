@@ -35,10 +35,19 @@ main_installation() {
     # Initialize system
     pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo zram-generator
 
-    # Initialize Keyrings
-    arch-chroot ${MOUNT_DIR} pacman-key --init
-    arch-chroot ${MOUNT_DIR} pacman-key --populate archlinux
-    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key archlinux
+	# Global Variables
+    CHAOTIC_KEY="3056513887B78AEB"
+
+    ## Initialize Keyrings
+    pacman-key --init
+    pacman-key --populate archlinux
+    pacman-key --lsign-key archlinux
+    pacman-key --recv-key $CHAOTIC_KEY --keyserver keyserver.ubuntu.com
+    pacman-key --lsign-key $CHAOTIC_KEY
+
+    ## Chaotic AUR meta packages
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
     
     # Generate fstab
 	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
