@@ -53,7 +53,7 @@ main_installation() {
 	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
 	
 	# Install custom scripts
-	install -Dm755 custom/efibootstub-utility $MOUNT_DIR/usr/local/efibootstub-utility
+	install -Dm755 custom/efibootstub-utility $MOUNT_DIR/usr/local/bin/efibootstub-utility
 
     # Install BTRFS early mkinitcpio module
     install -Dm644 etc/mkinitcpio/60-btrfs.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/60-btrfs.conf
