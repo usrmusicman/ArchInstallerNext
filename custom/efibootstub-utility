@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# Get mountpoints
+MOUNT_BOOT=`mount | grep " /boot " | cut -d " " -f 1`
+MOUNT_ROOT=`mount | grep " / " | cut -d " " -f 1`
+
+# Get you disk name and root partition UUID.
+DISK_NAME=`lsblk "$MOUNT_ROOT" -o PKNAME | tail -1`
+ROOT_UUID=`lsblk "$MOUNT_ROOT" -o UUID | tail -1`
+
+# Commandline Options
+OPTIONS="zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
+
+# Main Program
+if [[ "$USER" == "root" ]]; then
+
+    # Entry Creation Wizard
+    clear
+    echo "EFI boot stub creation wizard"
+    echo ""
+    ls /boot/vmlinuz* | tr " " "\n" | cut -d "-" -f 2,3
+    echo ""
+    read -r -p "Choose your CPU brand (i.e. amd, intel): " CPU
+    read -r -p "Choose your kernel entry (i.e. linux, linux-zen): " KERNEL
+    clear
+
+    # Install microcode
+    if [[ "${CPU}" == "amd" ]]; then
+
+        # AMD EFISTUB entry
+        efibootmgr --create --disk /dev/${DISK_NAME} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "$OPTIONS initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+    elif [[ "${CPU}" == "intel" ]]; then
+
+        # Intel EFISTUB entry
+        efibootmgr --create --disk /dev/${DISK_NAME} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "$OPTIONS initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+    else
+
+        # EFISTUB entry no microcode
+        efibootmgr --create --disk /dev/${DISK_NAME} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "$OPTIONS initrd=\initramfs-${KERNEL}.img"
+
+    fi
+
+    # Return to terminal
+    clear
+    fastfetch
+    echo ""
+
+else
+
+    # Message when not root
+    echo "Please become root before running this script..."
+
+fi

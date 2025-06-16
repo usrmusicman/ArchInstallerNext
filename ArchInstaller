@@ -52,14 +52,23 @@ main_installation() {
     # Generate fstab
 	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
 	
+	# Install custom scripts
+	install -Dm755 custom/efibootstub-utility $MOUNT_DIR/usr/local/efibootstub-utility
+
     # Install BTRFS early mkinitcpio module
-    install -Dm644 mkinitcpio/60-btrfs.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/60-btrfs.conf
+    install -Dm644 etc/mkinitcpio/60-btrfs.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/60-btrfs.conf
+
+    # Enable ntsync for wine
+    install -Dm644 etc/modules/10-ntsync.conf $MOUNT_DIR/etc/modules-load.d/10-ntsync.conf
+
+    # Enable network roaming discovery with avahi
+    install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
     
     # Install pacman.conf
-    install -Dm644 pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
+    install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
     
     # Install ZRAM generator configuration 
-    install -Dm644 systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
+    install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
 
 		# Install CPU microcode
     	if [[ "${CPU}" == "amd" ]]; then
@@ -100,8 +109,8 @@ main_installation() {
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
         
         # Install mkinitcpio early kernel module hooks and modprobe parameters
-        install -Dm644 mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
-        install -Dm644 modprobe/80-nvidia.conf $MOUNT_DIR/etc/modprobe.d/80-nvidia.conf
+        install -Dm644 etc/mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
+        install -Dm644 etc/modprobe/80-nvidia.conf $MOUNT_DIR/etc/modprobe.d/80-nvidia.conf
 
         # Enable nvidia driver related services
         arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
@@ -148,9 +157,6 @@ main_installation() {
 	
 	# Enable wheel group for administrator tasks
     sed -i -e "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" $MOUNT_DIR/etc/sudoers
-    
-    # Enable network roaming discovery with avahi
-    sed -i -e "s/mymachines/mymachines mdns_minimal [NOTFOUND=return]/" $MOUNT_DIR/etc/nsswitch.conf
 
 	# Create user with password
 	arch-chroot ${MOUNT_DIR} useradd -m $USERNAME
@@ -175,8 +181,23 @@ main_installation() {
     arch-chroot ${MOUNT_DIR} timedatectl set-timezone $TIMEZONE
     arch-chroot ${MOUNT_DIR} ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 	
-	# Set your system locale
+	# Create locale configuration
 	echo "LANG=${LOCALE}.UTF-8" > ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_CTYPE=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_NUMERIC=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_TIME=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_COLLATE=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_MONETARY=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_MESSAGES=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_PAPER=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_NAME=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_ADDRESS=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_TELEPHONE=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_MEASUREMENT=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_IDENTIFICATION=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_ALL=C" >> ${MOUNT_DIR}/etc/locale.conf
+
+	# Set your system locale
 	sed -i -e "s/#${LOCALE}.UTF-8/${LOCALE}.UTF-8/" ${MOUNT_DIR}/etc/locale.gen
 	sed -i -e "s/#${LOCALE} UTF-8/${LOCALE} UTF-8/" ${MOUNT_DIR}/etc/locale.gen
 	arch-chroot ${MOUNT_DIR} locale-gen
@@ -228,7 +249,7 @@ system_mapping() {
 	umount -lf $MOUNT_DIR
 	
 	# Mount root BTRFS subvolume
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@ $SYSTEM_PARTITION $MOUNT_DIR
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@ $SYSTEM_PARTITION $MOUNT_DIR
 	
 	# Make mount directories
 	mkdir -p ${MOUNT_DIR}/.snapshots
@@ -242,14 +263,14 @@ system_mapping() {
 	mkdir -p ${MOUNT_DIR}/var/tmp
 	
 	# Mount other BTRFS subvolumes
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@.snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@home $SYSTEM_PARTITION $MOUNT_DIR/home
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@opt $SYSTEM_PARTITION $MOUNT_DIR/opt
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@root $SYSTEM_PARTITION $MOUNT_DIR/root
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@srv $SYSTEM_PARTITION $MOUNT_DIR/srv
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@var_cache $SYSTEM_PARTITION $MOUNT_DIR/var/cache
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@var_log $SYSTEM_PARTITION $MOUNT_DIR/var/log
-	mount -t btrfs -o rw,relatime,compress=zstd:6,ssd,discard=async,space_cache=v2,subvol=/@var_tmp $SYSTEM_PARTITION $MOUNT_DIR/var/tmp
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@.snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@home $SYSTEM_PARTITION $MOUNT_DIR/home
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@opt $SYSTEM_PARTITION $MOUNT_DIR/opt
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@root $SYSTEM_PARTITION $MOUNT_DIR/root
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@srv $SYSTEM_PARTITION $MOUNT_DIR/srv
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_cache $SYSTEM_PARTITION $MOUNT_DIR/var/cache
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_log $SYSTEM_PARTITION $MOUNT_DIR/var/log
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_tmp $SYSTEM_PARTITION $MOUNT_DIR/var/tmp
 	
 	# Mount boot partition
 	mount $BOOT_PARTITION $MOUNT_DIR/boot
@@ -272,11 +293,19 @@ if [[ "$USER" == "root" ]]; then
     clear
     echo "Archlinux installer setup wizard"
     echo ""
-    lsblk -o TYPE,LABEL,FSTYPE,PATH
+    lsblk -o TYPE,PATH | grep "disk"
     echo ""
     read -r -p "Type in the disk name you want to install the system on (i.e. /dev/sda): " INSTALL_DISK
+    clear
+    echo "Archlinux installer setup wizard"
+    echo ""
+    lsblk -o TYPE,PATH ${INSTALL_DISK} | grep "part"
+    echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
     read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
+    clear
+    echo "Archlinux installer setup wizard"
+    echo ""
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
     read -r -p "Type in the CPU name you have in your system (Options: amd, intel): " CPU
     read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia): " GPU
@@ -287,14 +316,24 @@ if [[ "$USER" == "root" ]]; then
     read -r -p "Type in the kernel you want to install (i.e. linux or linux-zen): " KERNEL
     clear
     cat /etc/locale.gen | more
+    clear
+    echo "Archlinux installer setup wizard"
+    echo ""
     read -r -p "Type in your system locale name (i.e. en_US): " LOCALE
     read -r -p "Type in a country code (i.e. ca, us, uk): " COUNTRY_CODE
     clear
     timedatectl list-timezones
+    clear
+    echo "Archlinux installer setup wizard"
+    echo ""
     read -r -p "Type in your system's timezone (i.e. America/Toronto): " TIMEZONE
     clear
 
-	# Confirmation screen 
+	# Confirmation screen
+	echo "Archlinux installer setup wizard"
+    echo ""
+    echo "ARE THESE YOUR SETTINGS:"
+    echo ""
     echo "System installation disk: $INSTALL_DISK"
     echo "Boot partition: $BOOT_PARTITION"
     echo "System root partition: $SYSTEM_PARTITION"
