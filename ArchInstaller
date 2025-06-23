@@ -2,8 +2,6 @@
 
 # <<-- Globals -->>
 
-## Graphics Driver
-
 # AMD DRIVERS
 AMDGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-radeon libva-mesa-driver libva-utils rocm-opencl-runtime rocminfo vulkan-radeon"
 
@@ -16,280 +14,17 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-
 ## Start of package lists
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark aspell aspell-en bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins dosfstools efibootmgr elisa espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firewalld flatpak flatpak-kcm fluidsynth fwupd gamemode git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hspell hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kompare kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g nuspell octopi okular openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan scx-scheds skanpage soundfont-fluid steam sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird ttf-ms-fonts udisks2-btrfs usbguard unarchiver unrar vim vim-runtime vlc wget wireless-regdb wireplumber xdg-user-dirs-gtk xorg-xauth xorg-xhost yt-dlp"
+BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins dosfstools efibootmgr elisa espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firewalld flatpak flatpak-kcm fluidsynth fwupd gamemode git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kompare kwayland-integration lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi okular openssh orca partitionmanager phonon-qt5-vlc phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid steam sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird ttf-ms-fonts udisks2-btrfs usbguard unarchiver unrar vim vim-runtime vlc wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
+
 
 ## End of package lists
-
-format_system_partitions() {
-	
-	# Format ESP boot partition
-	mkfs.vfat -F32 -n Arch_ESP $BOOT_PARTITION
-	
-	# Format system install partition
-	mkfs.btrfs -L Archlinux -f $SYSTEM_PARTITION
-	
-}
-
-main_installation() {
-    
-    # Global Variables
-    CHAOTIC_KEY="3056513887B78AEB"
-
-    # Initialize system
-    pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo zram-generator
-    
-    ## Initialize Keyrings
-    arch-chroot ${MOUNT_DIR} pacman-key --init
-    arch-chroot ${MOUNT_DIR} pacman-key --populate archlinux
-    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key archlinux
-    arch-chroot ${MOUNT_DIR} pacman-key --recv-key $CHAOTIC_KEY --keyserver keyserver.ubuntu.com
-    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key $CHAOTIC_KEY
-
-    ## Chaotic AUR meta packages
-    arch-chroot ${MOUNT_DIR} pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-    arch-chroot ${MOUNT_DIR} pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
-
-    # Generate fstab
-	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
-	
-	# Install custom scripts
-	install -Dm755 custom/efibootstub-utility $MOUNT_DIR/usr/local/bin/efibootstub-utility
-
-    # Install BTRFS early mkinitcpio module
-    install -Dm644 etc/mkinitcpio/60-btrfs.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/60-btrfs.conf
-
-    # Enable ntsync for wine
-    install -Dm644 etc/modules/10-ntsync.conf $MOUNT_DIR/etc/modules-load.d/10-ntsync.conf
-
-    # Enable network roaming discovery with avahi
-    install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
-    
-    # Install pacman.conf
-    install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
-    
-    # Install ZRAM generator configuration 
-    install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
-
-		# Install CPU microcode
-    	if [[ "${CPU}" == "amd" ]]; then
-        
-        # Install AMD microcode
-        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
-        
-    	elif [[ "${CPU}" == "intel" ]]; then
-        
-        # Install Intel microcode
-        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
-        
-    	fi
-
-	# Install the display drivers
-    if [[ "${GPU}" == "amd" ]]; then
-        
-		# Install AMD GPU drivers
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
-		    
-		# Add opencl icd loader package
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
-        
-    elif [[ "${GPU}" == "intel" ]]; then
-        
-		# Install Intel GPU drivers
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
-		    
-		# Add opencl icd loader package
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
-        
-    elif [[ "${GPU}" == "nvidia" ]]; then
-        
-	    # Install Nvidia GPU drivers
-	    arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
-	    
-	    # Add opencl icd loader package
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
-        
-        # Install mkinitcpio early kernel module hooks and modprobe parameters
-        install -Dm644 etc/mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
-        install -Dm644 etc/modprobe/80-nvidia.conf $MOUNT_DIR/etc/modprobe.d/80-nvidia.conf
-
-        # Enable nvidia driver related services
-        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
-        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-powerd.service
-        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend-then-hibernate.service
-        
-    fi
-
-	# Create mirrorlist file with your country's mirrors
-    arch-chroot ${MOUNT_DIR} reflector -p https -c ${COUNTRY_CODE} > $MOUNT_DIR/etc/pacman.d/mirrorlist
-    
-    # Install desired kernel and headers
-	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm ${KERNEL} ${KERNEL}-headers
-	
-	# Install system packages
-	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $BASE_SYSTEM
-
-    # Enable system services
-    arch-chroot ${MOUNT_DIR} systemctl enable avahi-daemon.service
-    arch-chroot ${MOUNT_DIR} systemctl enable avahi-dnsconfd.service
-    arch-chroot ${MOUNT_DIR} systemctl enable bluetooth.service
-    arch-chroot ${MOUNT_DIR} systemctl enable cups.service
-    arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
-    arch-chroot ${MOUNT_DIR} systemctl enable firewalld.service
-    arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
-    arch-chroot ${MOUNT_DIR} systemctl enable sddm.service
-    arch-chroot ${MOUNT_DIR} systemctl enable NetworkManager.service
-	
-	# Make vim the default system-wide editor
-    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
-	
-	# Add tmpfs to the fstab
-	echo "" >> $MOUNT_DIR/etc/fstab
-	echo "# tmpfs mount" >> $MOUNT_DIR/etc/fstab
-	echo "tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0" >> $MOUNT_DIR/etc/fstab
-	
-	# Add ZRAM entry to your fstab
-	echo "" >> $MOUNT_DIR/etc/fstab
-	echo "# zram swap" >> $MOUNT_DIR/etc/fstab
-	echo "/dev/zram0 none swap defaults,discard,pri=100 0 0" >> $MOUNT_DIR/etc/fstab
-	
-	# Make the fluid soundfont the default for midi playback
-	echo "SOUND_FONT=/usr/share/soundfonts/FluidR3_GM.sf2" > $MOUNT_DIR/etc/conf.d/fluidsynth
-	
-	# Enable wheel group for administrator tasks
-    sed -i -e "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" $MOUNT_DIR/etc/sudoers
-
-	# Create user with password
-	arch-chroot ${MOUNT_DIR} useradd -m $USERNAME
-	arch-chroot ${MOUNT_DIR} usermod --password $(echo $PASSWORD | openssl passwd -1 -stdin) $USERNAME
-
-    # Add user to groups
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME audio
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME cups
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME flatpak
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME fwupd
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME gamemode
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME games
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME realtime
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME sddm
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME video
-    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME wheel
-    
-    # Add a hostname for the machine
-    echo "$HOSTNAME" > ${MOUNT_DIR}/etc/hostname
-    
-    # Set your timezone
-    arch-chroot ${MOUNT_DIR} timedatectl set-timezone $TIMEZONE
-    arch-chroot ${MOUNT_DIR} ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
-	
-	# Create locale configuration
-	echo "LANG=${LOCALE}.UTF-8" > ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_CTYPE=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_NUMERIC=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_TIME=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_COLLATE=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_MONETARY=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_MESSAGES=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_PAPER=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_NAME=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_ADDRESS=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_TELEPHONE=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_MEASUREMENT=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_IDENTIFICATION=${LOCALE}.UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
-	echo "LC_ALL=C" >> ${MOUNT_DIR}/etc/locale.conf
-
-	# Set your system locale
-	sed -i -e "s/#${LOCALE}.UTF-8/${LOCALE}.UTF-8/" ${MOUNT_DIR}/etc/locale.gen
-	sed -i -e "s/#${LOCALE} UTF-8/${LOCALE} UTF-8/" ${MOUNT_DIR}/etc/locale.gen
-	arch-chroot ${MOUNT_DIR} locale-gen
-	
-}
-
-setup_bootloader() {
-	
-	# System partition UUID
-	ROOT_UUID=`lsblk -o UUID ${SYSTEM_PARTITION} | tail -1`
-	
-	# Install microcode
-	if [[ "${CPU}" == "amd" ]]; then
-		
-		# AMD EFISTUB entry
-		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
-	
-	elif [[ "${CPU}" == "intel" ]]; then
-		
-		# Intel EFISTUB entry
-		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
-		
-	else
-	
-		# EFISTUB entry no microcode
-		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
-	
-	fi
-		
-}
-
-system_mapping() {
-	
-	# Mount system partition
-	mount $SYSTEM_PARTITION $MOUNT_DIR
-	
-	# Setup subvolumes
-	btrfs subvolume create ${MOUNT_DIR}/@
-	btrfs subvolume create ${MOUNT_DIR}/@.snapshots
-	btrfs subvolume create ${MOUNT_DIR}/@home
-	btrfs subvolume create ${MOUNT_DIR}/@opt
-	btrfs subvolume create ${MOUNT_DIR}/@root
-	btrfs subvolume create ${MOUNT_DIR}/@srv
-	btrfs subvolume create ${MOUNT_DIR}/@var_cache
-	btrfs subvolume create ${MOUNT_DIR}/@var_log
-	btrfs subvolume create ${MOUNT_DIR}/@var_tmp
-	
-	# Unmount system partition
-	umount -lf $MOUNT_DIR
-	
-	# Mount root BTRFS subvolume
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@ $SYSTEM_PARTITION $MOUNT_DIR
-	
-	# Make mount directories
-	mkdir -p ${MOUNT_DIR}/.snapshots
-	mkdir -p ${MOUNT_DIR}/boot
-	mkdir -p ${MOUNT_DIR}/home
-	mkdir -p ${MOUNT_DIR}/opt
-	mkdir -p ${MOUNT_DIR}/root
-	mkdir -p ${MOUNT_DIR}/srv
-	mkdir -p ${MOUNT_DIR}/var/cache
-	mkdir -p ${MOUNT_DIR}/var/log
-	mkdir -p ${MOUNT_DIR}/var/tmp
-	
-	# Mount other BTRFS subvolumes
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@.snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@home $SYSTEM_PARTITION $MOUNT_DIR/home
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@opt $SYSTEM_PARTITION $MOUNT_DIR/opt
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@root $SYSTEM_PARTITION $MOUNT_DIR/root
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@srv $SYSTEM_PARTITION $MOUNT_DIR/srv
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_cache $SYSTEM_PARTITION $MOUNT_DIR/var/cache
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_log $SYSTEM_PARTITION $MOUNT_DIR/var/log
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_tmp $SYSTEM_PARTITION $MOUNT_DIR/var/tmp
-	
-	# Mount boot partition
-	mount $BOOT_PARTITION $MOUNT_DIR/boot
-	
-}
-
-unmount_chroot() {
-	
-	# Unmount chroot
-	umount -lf $MOUNT_DIR
-
-}
 
 # <<-- Main Menu -->>
 
 # Make sure to run the script as root
 if [[ "$USER" == "root" ]]; then
 
-	# Main Wizard
+	# Menu Wizard
     clear
     echo "Archlinux installer setup wizard"
     echo ""
@@ -349,50 +84,320 @@ if [[ "$USER" == "root" ]]; then
     echo ""
     read -r -p "Is this information correct yes or no? " CONFIRM
     clear
-    
-    if [[ "$CONFIRM" == "yes" ]]; then
+
+# <<-- Functions -->>
+
+format_system_partitions() {
+
+	# Format ESP boot partition
+	mkfs.vfat -F32 -n Arch_ESP $BOOT_PARTITION
+
+	# Format system install partition
+	mkfs.btrfs -L Archlinux -f $SYSTEM_PARTITION
+
+}
+
+main_installation() {
+
+	# Global Variables
+    CHAOTIC_KEY="3056513887B78AEB"
+
+    # Initialize system
+    pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo zram-generator
+
+    ## Initialize Keyrings
+    arch-chroot ${MOUNT_DIR} pacman-key --init
+    arch-chroot ${MOUNT_DIR} pacman-key --populate archlinux
+    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key archlinux
+    arch-chroot ${MOUNT_DIR} pacman-key --recv-key $CHAOTIC_KEY --keyserver keyserver.ubuntu.com
+    arch-chroot ${MOUNT_DIR} pacman-key --lsign-key $CHAOTIC_KEY
+
+    ## Chaotic AUR meta packages
+    arch-chroot ${MOUNT_DIR} pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+    arch-chroot ${MOUNT_DIR} pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+
+    # Generate fstab
+	genfstab -U $MOUNT_DIR > $MOUNT_DIR/etc/fstab
+
+	# Install custom scripts
+	install -Dm755 custom/efibootstub-utility $MOUNT_DIR/usr/local/bin/efibootstub-utility
+
+    # Install BTRFS early mkinitcpio module
+    install -Dm644 etc/mkinitcpio/60-btrfs.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/60-btrfs.conf
+
+    # Enable ntsync for wine
+    install -Dm644 etc/modules/10-ntsync.conf $MOUNT_DIR/etc/modules-load.d/10-ntsync.conf
+
+    # Enable network roaming discovery with avahi
+    install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
+
+    # Install pacman.conf
+    install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
+
+    # Install ZRAM generator configuration
+    install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
+
+		# Install CPU microcode
+    	if [[ "${CPU}" == "amd" ]]; then
+
+        # Install AMD microcode
+        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
+
+    	elif [[ "${CPU}" == "intel" ]]; then
+
+        # Install Intel microcode
+        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
+
+    	fi
+
+	# Install the display drivers
+    if [[ "${GPU}" == "amd" ]]; then
+
+		# Install AMD GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
+
+		# Add opencl icd loader package
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+
+    elif [[ "${GPU}" == "intel" ]]; then
+
+		# Install Intel GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
+
+		# Add opencl icd loader package
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+
+    elif [[ "${GPU}" == "nvidia" ]]; then
+
+	    # Install Nvidia GPU drivers
+	    arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
+
+	    # Add opencl icd loader package
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+
+        # Install mkinitcpio early kernel module hooks and modprobe parameters
+        install -Dm644 etc/mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
+        install -Dm644 etc/modprobe/80-nvidia.conf $MOUNT_DIR/etc/modprobe.d/80-nvidia.conf
+
+        # Enable nvidia driver related services
+        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
+        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-powerd.service
+        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend-then-hibernate.service
+
+    fi
+
+	# Create mirrorlist file with your country's mirrors
+    arch-chroot ${MOUNT_DIR} reflector -p https -c ${COUNTRY_CODE} > $MOUNT_DIR/etc/pacman.d/mirrorlist
+
+    # Install desired kernel and headers
+	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm ${KERNEL} ${KERNEL}-headers scx-scheds
+
+	# Install system packages
+	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $BASE_SYSTEM
+
+    # Enable system services
+    arch-chroot ${MOUNT_DIR} systemctl enable avahi-daemon.service
+    arch-chroot ${MOUNT_DIR} systemctl enable avahi-dnsconfd.service
+    arch-chroot ${MOUNT_DIR} systemctl enable bluetooth.service
+    arch-chroot ${MOUNT_DIR} systemctl enable cups.service
+    arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
+    arch-chroot ${MOUNT_DIR} systemctl enable dbus-broker.service
+    arch-chroot ${MOUNT_DIR} systemctl enable firewalld.service
+    arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
+    arch-chroot ${MOUNT_DIR} systemctl enable scx.service
+    arch-chroot ${MOUNT_DIR} systemctl enable scx_loader.service
+    arch-chroot ${MOUNT_DIR} systemctl enable sddm.service
+    arch-chroot ${MOUNT_DIR} systemctl enable NetworkManager.service
+
+	# Make vim the default system-wide editor
+    echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
+
+	# Add tmpfs to the fstab
+	echo "# tmpfs mount" >> $MOUNT_DIR/etc/fstab
+	echo "tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0" >> $MOUNT_DIR/etc/fstab
+
+	# Add ZRAM entry to your fstab
+	echo "" >> $MOUNT_DIR/etc/fstab
+	echo "# zram swap" >> $MOUNT_DIR/etc/fstab
+	echo "/dev/zram0 none swap defaults,discard,pri=100 0 0" >> $MOUNT_DIR/etc/fstab
+
+	# Make the fluid soundfont the default for midi playback
+	echo "SOUND_FONT=/usr/share/soundfonts/FluidR3_GM.sf2" > $MOUNT_DIR/etc/conf.d/fluidsynth
+
+	# Enable wheel group for administrator tasks
+    sed -i -e "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" $MOUNT_DIR/etc/sudoers
+
+	# Create user with password
+	arch-chroot ${MOUNT_DIR} useradd -m $USERNAME
+	arch-chroot ${MOUNT_DIR} usermod --password $(echo $PASSWORD | openssl passwd -1 -stdin) $USERNAME
+
+    # Add user to groups
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME audio
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME cups
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME flatpak
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME fwupd
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME gamemode
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME games
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME realtime
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME sddm
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME video
+    arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME wheel
+
+    # Add a hostname for the machine
+    echo "$HOSTNAME" > ${MOUNT_DIR}/etc/hostname
+
+    # Set your timezone
+    arch-chroot ${MOUNT_DIR} timedatectl set-timezone $TIMEZONE
+    arch-chroot ${MOUNT_DIR} ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+
+	# Create locale configuration
+	echo "LANG=\"${LOCALE}\".UTF-8" > ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_CTYPE=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_NUMERIC=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_TIME=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_COLLATE=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_MONETARY=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_MESSAGES=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_PAPER=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_NAME=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_ADDRESS=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_TELEPHONE=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_MEASUREMENT=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_IDENTIFICATION=\"${LOCALE}\".UTF-8" >> ${MOUNT_DIR}/etc/locale.conf
+	echo "LC_ALL=\"C\"" >> ${MOUNT_DIR}/etc/locale.conf
+
+	# Set your system locale
+	sed -i -e "s/#${LOCALE}.UTF-8/${LOCALE}.UTF-8/" ${MOUNT_DIR}/etc/locale.gen
+	sed -i -e "s/#${LOCALE} UTF-8/${LOCALE} UTF-8/" ${MOUNT_DIR}/etc/locale.gen
+	arch-chroot ${MOUNT_DIR} locale-gen
+
+}
+
+setup_bootloader() {
+
+	# System partition UUID
+	ROOT_UUID=`lsblk -o UUID ${SYSTEM_PARTITION} | tail -1`
+
+	# Install microcode
+	if [[ "${CPU}" == "amd" ]]; then
+
+		# AMD EFISTUB entry
+		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+	elif [[ "${CPU}" == "intel" ]]; then
+
+		# Intel EFISTUB entry
+		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+	else
+
+		# EFISTUB entry no microcode
+		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+
+	fi
+
+}
+
+system_mapping() {
+
+	# Mount system partition
+	mount $SYSTEM_PARTITION $MOUNT_DIR
+
+	# Setup subvolumes
+	btrfs subvolume create ${MOUNT_DIR}/@
+	btrfs subvolume create ${MOUNT_DIR}/@.snapshots
+	btrfs subvolume create ${MOUNT_DIR}/@home
+	btrfs subvolume create ${MOUNT_DIR}/@opt
+	btrfs subvolume create ${MOUNT_DIR}/@root
+	btrfs subvolume create ${MOUNT_DIR}/@srv
+	btrfs subvolume create ${MOUNT_DIR}/@var_cache
+	btrfs subvolume create ${MOUNT_DIR}/@var_log
+	btrfs subvolume create ${MOUNT_DIR}/@var_tmp
+
+	# Unmount system partition
+	umount -lf $MOUNT_DIR
+
+	# Mount root BTRFS subvolume
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@ $SYSTEM_PARTITION $MOUNT_DIR
+
+	# Make mount directories
+	mkdir -p ${MOUNT_DIR}/.snapshots
+	mkdir -p ${MOUNT_DIR}/boot
+	mkdir -p ${MOUNT_DIR}/home
+	mkdir -p ${MOUNT_DIR}/opt
+	mkdir -p ${MOUNT_DIR}/root
+	mkdir -p ${MOUNT_DIR}/srv
+	mkdir -p ${MOUNT_DIR}/var/cache
+	mkdir -p ${MOUNT_DIR}/var/log
+	mkdir -p ${MOUNT_DIR}/var/tmp
+
+	# Mount other BTRFS subvolumes
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@.snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@home $SYSTEM_PARTITION $MOUNT_DIR/home
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@opt $SYSTEM_PARTITION $MOUNT_DIR/opt
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@root $SYSTEM_PARTITION $MOUNT_DIR/root
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@srv $SYSTEM_PARTITION $MOUNT_DIR/srv
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_cache $SYSTEM_PARTITION $MOUNT_DIR/var/cache
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_log $SYSTEM_PARTITION $MOUNT_DIR/var/log
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@var_tmp $SYSTEM_PARTITION $MOUNT_DIR/var/tmp
+
+	# Mount boot partition
+	mount $BOOT_PARTITION $MOUNT_DIR/boot
+
+}
+
+unmount_chroot() {
+
+	# Unmount chroot
+	umount -lf $MOUNT_DIR
+
+}
+
+# <<-- Program Logic -->>
+
+if [[ "$CONFIRM" == "yes" ]]; then
 
 		# Installation progress dialog
 		echo 'Install in progress!!'
 		echo ""
 		sleep 5
 		clear
-		
+
 		# Format partitions
 		echo "Formatting partitions..."
 		echo ""
 		format_system_partitions
 		sleep 5
 		clear
-		
+
 		# Create install mapping
 		echo "Creating system map..."
 		echo ""
 		system_mapping
 		sleep 5
 		clear
-		
+
 		# Main system installation
 		echo "Installing system..."
 		echo ""
 		main_installation
 		sleep 5
 		clear
-		
+
 		# Setup the bootloader
 		echo "Setting up bootloader..."
 		echo ""
 		setup_bootloader
 		sleep 5
 		clear
-		
+
 		# Unmount current system
 		echo "Unmount system install..."
 		echo ""
 		unmount_chroot
 		sleep 5
 		clear
-		
+
 		# Installation complete message
 		echo 'Install Complete!!!'
 		sleep 5
@@ -406,7 +411,7 @@ if [[ "$USER" == "root" ]]; then
 	fi
 
 else
-	
+
 	# Check if the user is root
     echo "Please be root to run this script..."
 
