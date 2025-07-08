@@ -14,7 +14,7 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-
 ## Start of package lists
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dolphin dolphin-plugins dosfstools efibootmgr elisa espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firewalld flatpak flatpak-kcm fluidsynth fwupd gamescope git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kompare kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs usbguard unarchiver unrar vim vim-runtime vlc wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
+BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak flatpak-kcm fluidsynth fwupd gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kompare kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard unarchiver unrar vim vim-runtime wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
 
 
 ## End of package lists
@@ -131,6 +131,12 @@ main_installation() {
     # Enable network roaming discovery with avahi
     install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
 
+    # Configure NetworkManager's default DNS service
+    install -Dm644 etc/NetworkManager/dns.conf $MOUNT_DIR/etc/NetworkManager/conf.d/dns.conf
+
+	# Configure NetworkManager's default DHCP service
+    install -Dm644 etc/NetworkManager/dhcp-client.conf $MOUNT_DIR/etc/NetworkManager/conf.d/dhcp-client.conf
+
     # Install pacman.conf
     install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
 
@@ -192,6 +198,9 @@ main_installation() {
     # Install desired kernel and headers
 	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm ${KERNEL} ${KERNEL}-headers scx-scheds
 
+	# Update the pre-system packaging before installing the main system
+	arch-chroot ${MOUNT_DIR} pacman -Suu
+
 	# Install system packages
 	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $BASE_SYSTEM
 
@@ -202,11 +211,11 @@ main_installation() {
     arch-chroot ${MOUNT_DIR} systemctl enable cups.service
     arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
     arch-chroot ${MOUNT_DIR} systemctl enable dbus-broker.service
-    arch-chroot ${MOUNT_DIR} systemctl enable firewalld.service
     arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
     arch-chroot ${MOUNT_DIR} systemctl enable scx.service
     arch-chroot ${MOUNT_DIR} systemctl enable scx_loader.service
     arch-chroot ${MOUNT_DIR} systemctl enable sddm.service
+    arch-chroot ${MOUNT_DIR} systemctl enable ufw.service
     arch-chroot ${MOUNT_DIR} systemctl enable NetworkManager.service
 
 	# Make vim the default system-wide editor
