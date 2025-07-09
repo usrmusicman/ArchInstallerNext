@@ -8,8 +8,12 @@ MOUNT_ROOT=`mount | grep " / " | cut -d " " -f 1`
 DISK_NAME=`lsblk "$MOUNT_ROOT" -o PKNAME | tail -1`
 ROOT_UUID=`lsblk "$MOUNT_ROOT" -o UUID | tail -1`
 
+# Check your cpu and gpu vendor
+CPU=`lshw -class cpu | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
+GPU=`lshw -class video | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
+
 # Commandline Options
-OPTIONS="zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
+EFI_OPTIONS="zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
 
 # Main Program
 if [[ "$USER" == "root" ]]; then
@@ -20,27 +24,65 @@ if [[ "$USER" == "root" ]]; then
     echo ""
     ls /boot/vmlinuz* | tr " " "\n" | cut -d "-" -f 2,3
     echo ""
-    read -r -p "Choose your CPU brand (i.e. amd, intel): " CPU
     read -r -p "Choose your kernel entry (i.e. linux, linux-zen): " KERNEL
+
+    # Check if you want nvidia to use the foss or nvidia's open drivers
+    if [[ "${GPU}" == "NVIDIA" ]]; then
+		read -r -p "Do you want to use the nvidia foss drivers? (Options: yes or no): " NVIDIA_FOSS
+    fi
+
     clear
 
-    # Install microcode
-    if [[ "${CPU}" == "amd" ]]; then
+    # Create EFIStub entries based of CPU choice
+	if [[ "${CPU}" == "Advanced" ]]; then
 
-        # AMD EFISTUB entry
-        efibootmgr --create --disk /dev/${DISK_NAME} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "$OPTIONS initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+		# AMD EFISTUB entry
+		if [[ "${GPU}" == "NVIDIA" ]]; then
 
-    elif [[ "${CPU}" == "intel" ]]; then
+			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 
-        # Intel EFISTUB entry
-        efibootmgr --create --disk /dev/${DISK_NAME} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "$OPTIONS initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+			fi
 
-    else
+		else
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+		fi
 
-        # EFISTUB entry no microcode
-        efibootmgr --create --disk /dev/${DISK_NAME} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "$OPTIONS initrd=\initramfs-${KERNEL}.img"
+	elif [[ "${CPU}" == "Intel" ]]; then
 
-    fi
+		# Intel EFISTUB entry
+		if [[ "${GPU}" == "NVIDIA" ]]; then
+
+			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+			fi
+
+		else
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+		fi
+
+	else
+
+		# EFISTUB entry no microcode
+		if [[ "${GPU}" == "NVIDIA" ]]; then
+
+			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\initramfs-${KERNEL}.img"
+
+			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\initramfs-${KERNEL}.img"
+			fi
+
+		else
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\initramfs-${KERNEL}.img"
+		fi
+
+	fi
 
     # Return to terminal
     clear

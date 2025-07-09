@@ -2,6 +2,12 @@
 
 # <<-- Globals -->>
 
+# Check your cpu and gpu vendor
+CPU=`lshw -class cpu | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
+GPU=`lshw -class video | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
+
+## Start of package lists
+
 # AMD DRIVERS
 AMDGPU_DRV="lib32-libva-mesa-driver lib32-vulkan-radeon libva-mesa-driver libva-utils rocm-opencl-runtime rocminfo vulkan-radeon"
 
@@ -14,11 +20,8 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-
 # NVIDIA DRIVERS (Fully FOSS)
 NVIDIAGPU_DRV_FOSS="lib32-vulkan-nouveau libva-utils vulkan-nouveau"
 
-## Start of package lists
-
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak fwupd fwupd-efi gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kinfocenter kio-admin kmenuedit konsole kompare kscreen kscreenlocker ksshaskpass kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma-meta plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-desktop-portal-kde xdg-user-dirs-gtk yt-dlp"
-
+BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak fwupd fwupd-efi gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kinfocenter kio-admin kmenuedit konsole kompare kscreen kscreenlocker ksshaskpass kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma-meta plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-desktop-portal-kde xdg-user-dirs-gtk yt-dlp"
 
 ## End of package lists
 
@@ -41,16 +44,13 @@ if [[ "$USER" == "root" ]]; then
     echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
     read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
-    clear
-    echo "Archlinux installer setup wizard"
-    echo ""
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
-    read -r -p "Type in the CPU name you have in your system (Options: amd, intel): " CPU
-    read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia): " GPU
+    clear
 
     # Check if you want nvidia to use the foss or nvidia's open drivers
-    if [[ "${GPU}" == "nvidia" ]]; then
+    if [[ "${GPU}" == "NVIDIA" ]]; then
 		read -r -p "Do you want to use the nvidia foss drivers? (Options: yes or no): " NVIDIA_FOSS
+		clear
     fi
 
     read -r -p "Type in your username (i.e. myusername): " USERNAME
@@ -86,7 +86,7 @@ if [[ "$USER" == "root" ]]; then
     echo "GPU: $GPU"
 
 	# Check if you want nvidia to use the foss or nvidia's open drivers
-    if [[ "${GPU}" == "nvidia" ]]; then
+    if [[ "${GPU}" == "NVIDIA" ]]; then
 		echo "Do you want to use the nvidia foss drivers: ${NVIDIA_FOSS}"
 	fi
 
@@ -159,12 +159,12 @@ main_installation() {
     install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
 
 	# Install CPU microcode
-	if [[ "${CPU}" == "amd" ]]; then
+	if [[ "${CPU}" == "Advanced" ]]; then
 
 		# Install AMD microcode
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
 
-	elif [[ "${CPU}" == "intel" ]]; then
+	elif [[ "${CPU}" == "Intel" ]]; then
 
 		# Install Intel microcode
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
@@ -172,7 +172,7 @@ main_installation() {
 	fi
 
 	# Install the display drivers
-    if [[ "${GPU}" == "amd" ]]; then
+    if [[ "${GPU}" == "Advanced" ]]; then
 
 		# Install AMD GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
@@ -180,7 +180,7 @@ main_installation() {
 		# Add opencl icd loader package
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
 
-    elif [[ "${GPU}" == "intel" ]]; then
+    elif [[ "${GPU}" == "Intel" ]]; then
 
 		# Install Intel GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
@@ -188,7 +188,7 @@ main_installation() {
 		# Add opencl icd loader package
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
 
-    elif [[ "${GPU}" == "nvidia" ]]; then
+    elif [[ "${GPU}" == "NVIDIA" ]]; then
 
 		# Check whether the foss driver is going to be used.
 		if [[ "${NVIDIA_FOSS}" == "no" ]]; then
@@ -312,53 +312,56 @@ setup_bootloader() {
 	# System partition UUID
 	ROOT_UUID=`lsblk -o UUID ${SYSTEM_PARTITION} | tail -1`
 
+	# Commandline Options
+	EFI_OPTIONS="zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
+
 	# Create EFIStub entries based of CPU choice
-	if [[ "${CPU}" == "amd" ]]; then
+	if [[ "${CPU}" == "Advanced" ]]; then
 
 		# AMD EFISTUB entry
-		if [[ "${GPU}" == "nvidia" ]]; then
+		if [[ "${GPU}" == "NVIDIA" ]]; then
 
 			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
-				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog nvidia-drm.modeset=1 quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 
 			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
-				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nouveau.config=NvGspRm=1 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 			fi
 
 		else
-			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 		fi
 
-	elif [[ "${CPU}" == "intel" ]]; then
+	elif [[ "${CPU}" == "Intel" ]]; then
 
 		# Intel EFISTUB entry
-		if [[ "${GPU}" == "nvidia" ]]; then
+		if [[ "${GPU}" == "NVIDIA" ]]; then
 
 			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
-				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog nvidia-drm.modeset=1 quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
 
 			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
-				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nouveau.config=NvGspRm=1 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
 			fi
 
 		else
-			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
 		fi
 
 	else
 
 		# EFISTUB entry no microcode
-		if [[ "${GPU}" == "nvidia" ]]; then
+		if [[ "${GPU}" == "NVIDIA" ]]; then
 
 			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
-				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog nvidia-drm.modeset=1 quiet splash initrd=\initramfs-${KERNEL}.img"
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\initramfs-${KERNEL}.img"
 
 			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
-				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nouveau.config=NvGspRm=1 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\initramfs-${KERNEL}.img"
 			fi
 
 		else
-			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\initramfs-${KERNEL}.img"
 		fi
 
 	fi
