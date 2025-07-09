@@ -11,10 +11,13 @@ INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-vulk
 # NVIDIA DRIVERS
 NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-utils libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo"
 
+# NVIDIA DRIVERS (Fully FOSS)
+NVIDIAGPU_DRV_FOSS="lib32-vulkan-nouveau libva-utils vulkan-nouveau"
+
 ## Start of package lists
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak flatpak-kcm fluidsynth fwupd gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kio-admin konsole kompare kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils libvoikko linux-firmware man-db man-pages mangohud mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plasma-wayland-protocols plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard unarchiver unrar vim vim-runtime wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
+BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak fwupd fwupd-efi gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kid3 kimageformats kinfocenter kio-admin kmenuedit konsole kompare kscreen kscreenlocker ksshaskpass kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma-meta plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-desktop-portal-kde xdg-user-dirs-gtk yt-dlp"
 
 
 ## End of package lists
@@ -44,6 +47,12 @@ if [[ "$USER" == "root" ]]; then
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
     read -r -p "Type in the CPU name you have in your system (Options: amd, intel): " CPU
     read -r -p "Type in the GPU name you have in your system (Options: amd, intel, nvidia): " GPU
+
+    # Check if you want nvidia to use the foss or nvidia's open drivers
+    if [[ "${GPU}" == "nvidia" ]]; then
+		read -r -p "Do you want to use the nvidia foss drivers? (Options: yes or no): " NVIDIA_FOSS
+    fi
+
     read -r -p "Type in your username (i.e. myusername): " USERNAME
     read -s -p "Type in ${USERNAME}'s password (i.e. mypassword): " PASSWORD
     echo ""
@@ -75,6 +84,12 @@ if [[ "$USER" == "root" ]]; then
     echo "Install mountpoint: $MOUNT_DIR"
     echo "CPU: $CPU"
     echo "GPU: $GPU"
+
+	# Check if you want nvidia to use the foss or nvidia's open drivers
+    if [[ "${GPU}" == "nvidia" ]]; then
+		echo "Do you want to use the nvidia foss drivers: ${NVIDIA_FOSS}"
+	fi
+
     echo "Username: $USERNAME"
     echo "Hostname: $HOSTNAME"
     echo "Kernel to install: $KERNEL"
@@ -132,10 +147,10 @@ main_installation() {
     install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
 
     # Configure NetworkManager's default DNS service
-    install -Dm644 etc/NetworkManager/dns.conf $MOUNT_DIR/etc/NetworkManager/conf.d/dns.conf
+    install -Dm644 etc/NetworkManager/10-dns.conf $MOUNT_DIR/etc/NetworkManager/conf.d/10-dns.conf
 
 	# Configure NetworkManager's default DHCP service
-    install -Dm644 etc/NetworkManager/dhcp-client.conf $MOUNT_DIR/etc/NetworkManager/conf.d/dhcp-client.conf
+    install -Dm644 etc/NetworkManager/20-dhcp-client.conf $MOUNT_DIR/etc/NetworkManager/conf.d/20-dhcp-client.conf
 
     # Install pacman.conf
     install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
@@ -143,18 +158,18 @@ main_installation() {
     # Install ZRAM generator configuration
     install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
 
-		# Install CPU microcode
-    	if [[ "${CPU}" == "amd" ]]; then
+	# Install CPU microcode
+	if [[ "${CPU}" == "amd" ]]; then
 
-        # Install AMD microcode
-        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
+		# Install AMD microcode
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
 
-    	elif [[ "${CPU}" == "intel" ]]; then
+	elif [[ "${CPU}" == "intel" ]]; then
 
-        # Install Intel microcode
-        arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
+		# Install Intel microcode
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
 
-    	fi
+	fi
 
 	# Install the display drivers
     if [[ "${GPU}" == "amd" ]]; then
@@ -175,34 +190,44 @@ main_installation() {
 
     elif [[ "${GPU}" == "nvidia" ]]; then
 
-	    # Install Nvidia GPU drivers
-	    arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
+		# Check whether the foss driver is going to be used.
+		if [[ "${NVIDIA_FOSS}" == "no" ]]; then
 
-	    # Add opencl icd loader package
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
+			# Install Nvidia GPU drivers
+			arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
 
-        # Install mkinitcpio early kernel module hooks and modprobe parameters
-        install -Dm644 etc/mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
-        install -Dm644 etc/modprobe/80-nvidia.conf $MOUNT_DIR/etc/modprobe.d/80-nvidia.conf
+			# Add opencl icd loader package
+			arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm lib32-ocl-icd ocl-icd
 
-        # Enable nvidia driver related services
-        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
-        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-powerd.service
-        arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend-then-hibernate.service
+			# Install mkinitcpio early kernel module hooks and modprobe parameters
+			install -Dm644 etc/mkinitcpio/80-nvidia.conf $MOUNT_DIR/etc/mkinitcpio.conf.d/80-nvidia.conf
+			install -Dm644 etc/modprobe/80-nvidia.conf $MOUNT_DIR/etc/modprobe.d/80-nvidia.conf
+
+			# Enable nvidia driver related services
+			arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
+			arch-chroot ${MOUNT_DIR} systemctl enable nvidia-powerd.service
+			arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend-then-hibernate.service
+
+		elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+
+			# Install Nvidia FOSS drivers
+			arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV_FOSS
+
+		fi
 
     fi
 
 	# Create mirrorlist file with your country's mirrors
-    arch-chroot ${MOUNT_DIR} reflector -p https -c ${COUNTRY_CODE} > $MOUNT_DIR/etc/pacman.d/mirrorlist
+    arch-chroot ${MOUNT_DIR} reflector -c ${COUNTRY_CODE} --age 12 -p http,https --sort rate --save /etc/pacman.d/mirrorlist
 
     # Install desired kernel and headers
 	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm ${KERNEL} ${KERNEL}-headers scx-scheds
 
-	# Update the pre-system packaging before installing the main system
-	arch-chroot ${MOUNT_DIR} pacman -Suu
-
 	# Install system packages
 	arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $BASE_SYSTEM
+
+	# Run final system package update
+	arch-chroot ${MOUNT_DIR} pacman -Suu
 
     # Enable system services
     arch-chroot ${MOUNT_DIR} systemctl enable avahi-daemon.service
@@ -287,21 +312,54 @@ setup_bootloader() {
 	# System partition UUID
 	ROOT_UUID=`lsblk -o UUID ${SYSTEM_PARTITION} | tail -1`
 
-	# Install microcode
+	# Create EFIStub entries based of CPU choice
 	if [[ "${CPU}" == "amd" ]]; then
 
 		# AMD EFISTUB entry
-		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+		if [[ "${GPU}" == "nvidia" ]]; then
+
+			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog nvidia-drm.modeset=1 quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nouveau.config=NvGspRm=1 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+			fi
+
+		else
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
+		fi
 
 	elif [[ "${CPU}" == "intel" ]]; then
 
 		# Intel EFISTUB entry
-		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+		if [[ "${GPU}" == "nvidia" ]]; then
+
+			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog nvidia-drm.modeset=1 quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+
+			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nouveau.config=NvGspRm=1 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+			fi
+
+		else
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
+		fi
 
 	else
 
 		# EFISTUB entry no microcode
-		arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+		if [[ "${GPU}" == "nvidia" ]]; then
+
+			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog nvidia-drm.modeset=1 quiet splash initrd=\initramfs-${KERNEL}.img"
+
+			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nouveau.config=NvGspRm=1 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+			fi
+
+		else
+			arch-chroot ${MOUNT_DIR} efibootmgr --create --disk ${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "zswap.enabled=0 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash initrd=\initramfs-${KERNEL}.img"
+		fi
 
 	fi
 
