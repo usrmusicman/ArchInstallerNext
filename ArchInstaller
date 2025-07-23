@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# <<-- Globals -->>
-
-# Check your cpu and gpu vendor
-CPU=`lshw -class cpu | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
-GPU=`lshw -class video | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
-
 ## Start of package lists
 
 # AMD DRIVERS
@@ -21,7 +15,7 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libva-
 NVIDIAGPU_DRV_FOSS="lib32-vulkan-nouveau libva-utils vulkan-nouveau"
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak fwupd fwupd-efi gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kf6 kid3 kimageformats kinfocenter kio-admin kio-gdrive kmenuedit konsole kompare kscreen kscreenlocker ksshaskpass kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi okular openssh orca partitionmanager phonon-qt5-mpv phonon-qt6-mpv pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma-meta plymouth power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-desktop-portal-kde xdg-user-dirs-gtk yt-dlp"
+BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-libs bluez-obex bluez-mesh bluez-tools bluez-utils breeze5 btrfs-progs crun cups cups-browsed cups-filters cups-pdf cups-pk-helper dhcpcd distrobox dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs flatpak fuse-overlayfs fwupd fwupd-efi gamescope git google-chrome gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdialog keditbookmarks kf6 kid3 kimageformats kinfocenter kio-admin kio-gdrive kmenuedit konsole kompare kscreen kscreenlocker ksshaskpass kwayland-integration lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi okular openresolv openssh orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma plasma-meta plymouth podman power-profiles-daemon pulse-native-provider pulsemixer qbittorrent qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanpage soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-desktop-portal-kde xdg-user-dirs-gtk yt-dlp"
 
 ## End of package lists
 
@@ -29,6 +23,14 @@ BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups blue
 
 # Make sure to run the script as root
 if [[ "$USER" == "root" ]]; then
+
+	# Install script dependencies
+	clear
+	pacman -Syy --noconfirm lshw
+
+	# Check your cpu and gpu vendor
+	CPU=`lshw -class cpu | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
+	GPU=`lshw -class video | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
 
 	# Menu Wizard
     clear
@@ -45,6 +47,7 @@ if [[ "$USER" == "root" ]]; then
     echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
     read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
+    read -r -p "Type in the partition name of the swap partition (i.e. /dev/sda2): " SWAP_PARTITION
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
     clear
 
@@ -111,6 +114,10 @@ format_system_partitions() {
 	# Format system install partition
 	mkfs.btrfs -L Archlinux -f $SYSTEM_PARTITION
 
+	# Create and enable swap partition
+	mkswap ${SWAP_PARTITION}
+	swapon ${SWAP_PARTITION}
+
 }
 
 main_installation() {
@@ -119,7 +126,7 @@ main_installation() {
     CHAOTIC_KEY="3056513887B78AEB"
 
     # Initialize system
-    pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo zram-generator
+    pacstrap -K ${MOUNT_DIR} base base-devel mkinitcpio reflector sudo
 
     ## Initialize Keyrings
     arch-chroot ${MOUNT_DIR} pacman-key --init
@@ -156,8 +163,9 @@ main_installation() {
     # Install pacman.conf
     install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
 
-    # Install ZRAM generator configuration
-    install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
+    # Install SDDM configs
+    install -Dm644 etc/sddm/kde_settings.conf $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
+    install -Dm644 etc/sddm/virtualkbd.conf $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
 
 	# Install CPU microcode
 	if [[ "${CPU}" == "Advanced" ]]; then
@@ -248,13 +256,8 @@ main_installation() {
     echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
 
 	# Add tmpfs to the fstab
-	echo "# tmpfs mount" >> $MOUNT_DIR/etc/fstab
+	echo "# tmpfs" >> $MOUNT_DIR/etc/fstab
 	echo "tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0" >> $MOUNT_DIR/etc/fstab
-
-	# Add ZRAM entry to your fstab
-	echo "" >> $MOUNT_DIR/etc/fstab
-	echo "# zram swap" >> $MOUNT_DIR/etc/fstab
-	echo "/dev/zram0 none swap defaults,discard,pri=100 0 0" >> $MOUNT_DIR/etc/fstab
 
 	# Make the fluid soundfont the default for midi playback
 	echo "SOUND_FONT=/usr/share/soundfonts/FluidR3_GM.sf2" > $MOUNT_DIR/etc/conf.d/fluidsynth
