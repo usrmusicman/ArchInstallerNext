@@ -47,7 +47,7 @@ if [[ "$USER" == "root" ]]; then
     echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
     read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
-    read -r -p "Type in the partition name of the swap partition (i.e. /dev/sda2): " SWAP_PARTITION
+    read -r -p "Type in the partition name of the swap partition (i.e. /dev/sda3): " SWAP_PARTITION
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
     clear
 
