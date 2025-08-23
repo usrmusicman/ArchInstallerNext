@@ -13,7 +13,7 @@ CPU=`lshw -class cpu | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
 GPU=`lshw -class video | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
 
 # Commandline Options
-EFI_OPTIONS="zswap.enabled=1 zswap.shrinker_enabled=1 zswap.compressor=zstd zswap.max_pool_percent=25 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog"
+EFI_OPTIONS="zswap.enabled=1 zswap.shrinker_enabled=1 zswap.compressor=zstd zswap.max_pool_percent=25 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
 
 
 # Main Program
