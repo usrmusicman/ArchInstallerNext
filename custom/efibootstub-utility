@@ -1,4 +1,5 @@
 #!/bin/sh
+# This script is designed to work with Archlinux
 
 # Get mountpoints
 MOUNTPOINT_ROOT=`mount | grep " / " | cut -d " " -f 1`
@@ -40,13 +41,24 @@ if [[ "$USER" == "root" ]]; then
 		if [[ "${GPU}" == "NVIDIA" ]]; then
 
 			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				# Install all the needed packages for the proprietary nvidia driver
+				pacman -Syy --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+				pacman -Rsc --noconfirm lib32-vulkan-nouveau vulkan-nouveau
+
+				# Create a UEFI entry
 				efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 
 			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				# Install only the needed packages for the foss nouveau driver
+				pacman -Syy --noconfirm lib32-vulkan-nouveau vulkan-nouveau
+				pacman -Rsc --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+
+				# Create a UEFI entry
 				efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 			fi
 
 		else
+			# Create a UEFI entry
 			efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\amd-ucode.img initrd=\initramfs-${KERNEL}.img"
 		fi
 
@@ -56,13 +68,24 @@ if [[ "$USER" == "root" ]]; then
 		if [[ "${GPU}" == "NVIDIA" ]]; then
 
 			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				# Install all the needed packages for the proprietary nvidia driver
+				pacman -Syy --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+				pacman -Rsc --noconfirm lib32-vulkan-nouveau vulkan-nouveau
+
+				# Create a UEFI entry
 				efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
 
 			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				# Install only the needed packages for the foss nouveau driver
+				pacman -Syy --noconfirm lib32-vulkan-nouveau vulkan-nouveau
+				pacman -Rsc --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+
+				# Create a UEFI entry
 				efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
 			fi
 
 		else
+			# Create a UEFI entry
 			efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\intel-ucode.img initrd=\initramfs-${KERNEL}.img"
 		fi
 
@@ -72,13 +95,24 @@ if [[ "$USER" == "root" ]]; then
 		if [[ "${GPU}" == "NVIDIA" ]]; then
 
 			if [[ "${NVIDIA_FOSS}" == "no" ]]; then
+				# Install all the needed packages for the proprietary nvidia driver
+				pacman -Syy --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+				pacman -Rsc --noconfirm lib32-vulkan-nouveau vulkan-nouveau
+
+				# Create a UEFI entry
 				efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nvidia-drm.modeset=1 initrd=\initramfs-${KERNEL}.img"
 
 			elif [[ "${NVIDIA_FOSS}" == "yes" ]]; then
+				# Install only the needed packages for the foss nouveau driver
+				pacman -Syy --noconfirm lib32-vulkan-nouveau vulkan-nouveau
+				pacman -Rsc --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+
+				# Create a UEFI entry
 				efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} nouveau.config=NvGspRm=1 initrd=\initramfs-${KERNEL}.img"
 			fi
 
 		else
+			# Create a UEFI entry
 			efibootmgr --create --disk /dev/${INSTALL_DISK} --part 1 --label "Arch Linux" --loader /vmlinuz-${KERNEL} --unicode "${EFI_OPTIONS} initrd=\initramfs-${KERNEL}.img"
 		fi
 
