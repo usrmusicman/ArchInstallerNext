@@ -15,7 +15,7 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdp
 NVIDIAGPU_DRV_FOSS="lib32-vulkan-nouveau vulkan-nouveau"
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs crun cups cups-browsed cups-filters cups-pdf distrobox dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi openresolv openssh openvpn orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm podman power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan simple-scan soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-desktop-portal-kde xdg-user-dirs-gtk yt-dlp"
+BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs crun cups cups-browsed cups-pdf distrobox dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope git gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi openresolv openssh openvpn orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm podman power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan simple-scan soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
 
 ## End of package lists
 
@@ -163,6 +163,9 @@ main_installation() {
     # Install SDDM configs
     install -Dm644 etc/sddm/kde_settings.conf $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
     install -Dm644 etc/sddm/virtualkbd.conf $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
+
+    # Install scripts for use by each system user
+    install -Dm755 etc/skel/enable_flathub_as_user $MOUNT_DIR/etc/skel/enable_flathub_as_user
 
 	# Install CPU microcode
 	if [[ "${CPU}" == "Advanced" ]]; then
@@ -372,7 +375,7 @@ system_mapping() {
 
 	# Setup subvolumes
 	btrfs subvolume create ${MOUNT_DIR}/@
-	btrfs subvolume create ${MOUNT_DIR}/@snapshots
+	btrfs subvolume create ${MOUNT_DIR}/@.snapshots
 	btrfs subvolume create ${MOUNT_DIR}/@cache
 	btrfs subvolume create ${MOUNT_DIR}/@home
 	btrfs subvolume create ${MOUNT_DIR}/@log
@@ -393,7 +396,7 @@ system_mapping() {
 	mkdir -p ${MOUNT_DIR}/var/log
 
 	# Mount other BTRFS subvolumes
-	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
+	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@.snapshots $SYSTEM_PARTITION $MOUNT_DIR/.snapshots
 	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@cache $SYSTEM_PARTITION $MOUNT_DIR/var/cache
 	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@home $SYSTEM_PARTITION $MOUNT_DIR/home
 	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@log $SYSTEM_PARTITION $MOUNT_DIR/var/log
