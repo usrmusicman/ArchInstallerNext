@@ -1,0 +1,27 @@
+#!/bin/sh
+# This script is designed to work with Archlinux
+
+# Check if user is root
+if [[ "$USER" == "root" ]]; then
+
+	# Install snapper package
+	pacman -Syy --noconfirm snapper grub-btrfs
+	systemctl enable grub-btrfsd
+
+	# Unmount and remove .snapshots directory
+	umount /.snapshots
+	rm -rf /.snapshots
+
+	# Initialize snapper installation
+	snapper -c root create-config /
+
+	# Reboot System
+	slepp 3
+	systemctl reboot
+
+else
+
+	# Error Message
+	echo "You must run this script as the root user"
+
+fi
