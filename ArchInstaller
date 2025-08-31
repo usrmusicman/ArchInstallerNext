@@ -13,7 +13,7 @@ NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia libva-nvidia
 BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs crun cups cups-browsed cups-pdf cups-pk-helper distrobox dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope git grub gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin kio-gdrive kio-zeroconf konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mtools multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g openresolv openssh openvpn os-prober orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm podman power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan simple-scan soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
 
 # Define where you want GRUB to be installed
-ESP_MOUNT="/boot/efi"
+ESP_MOUNT="boot/efi"
 
 # <<-- Main Menu -->>
 
@@ -42,11 +42,12 @@ if [[ "$USER" == "root" ]]; then
     lsblk -o TYPE,PATH ${INSTALL_DISK} | grep "part"
     echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
-    read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
-    read -r -p "Type in the partition name of the swap partition (i.e. /dev/sda3): " SWAP_PARTITION
+    read -r -p "Type in the partition name of the swap partition (i.e. /dev/sda2): " SWAP_PARTITION
+    read -r -p "Type in the partition name of the system install (i.e. /dev/sda3): " SYSTEM_PARTITION
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
     read -r -p "Type in your username (i.e. myusername): " USERNAME
     read -s -p "Type in ${USERNAME}'s password (i.e. mypassword): " PASSWORD
+    echo ""
     read -r -p "Type in your computer's host name (i.e. mycomputer): " HOSTNAME
     read -r -p "Type in the kernel you want to install (i.e. linux or linux-zen): " KERNEL
     clear
@@ -71,12 +72,11 @@ if [[ "$USER" == "root" ]]; then
     echo ""
     echo "System Settings"
     echo ""
-    echo "System installation disk: $INSTALL_DISK"
     echo "Boot partition: $BOOT_PARTITION"
+    echo "Swap partition: $SWAP_PARTITION"
     echo "Root partition: $SYSTEM_PARTITION"
-    echo "Swap partition: $SYSTEM_PARTITION"
     echo "Install mountpoint: $MOUNT_DIR"
-    echo "ESP system boot mountpoint: $ESP_MOUNT"
+    echo "ESP system boot mountpoint: /${ESP_MOUNT}"
     echo "CPU: $CPU"
     echo "GPU: $GPU"
     echo "Kernel to install: $KERNEL"
@@ -146,8 +146,14 @@ main_installation() {
     install -Dm644 etc/sddm/kde_settings.conf $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
     install -Dm644 etc/sddm/virtualkbd.conf $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
 
-    # Install scripts for use by each system user
-    install -Dm755 etc/skel/enable_flathub_as_user $MOUNT_DIR/etc/skel/enable_flathub_as_user
+    # Install flathub as a user
+    install -Dm755 etc/skel/enable_flathub_as_user $MOUNT_DIR/etc/skel/Desktop/enable_flathub_as_user
+
+    # Install snapper installer script
+    install -Dm755 etc/skel/enable_snapshots $MOUNT_DIR/etc/skel/Desktop/enable_snapshots
+    
+    # Install nvidia driver toggle script
+    install -Dm755 etc/skel/nvidia_driver_toggle $MOUNT_DIR/etc/skel/Desktop/nvidia_driver_toggle
 
 	# Install CPU microcode
 	if [[ "${CPU}" == "Advanced" ]]; then
@@ -282,13 +288,13 @@ setup_bootloader() {
 	EFI_OPTIONS="zswap.enabled=1 zswap.shrinker_enabled=1 zswap.compressor=zstd zswap.max_pool_percent=25 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} cpufreq.default_governor=performance mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
 
 	# Install GRUB Bootloader
-	grub-install --target=x86_64-efi --efi-directory=${ESP_MOUNT} --bootloader-id="Archlinux"
+	arch-chroot ${MOUNT_DIR} grub-install --target=x86_64-efi --efi-directory=/${ESP_MOUNT} --bootloader-id="Archlinux"
 
 	# Configure GRUB Bootloader
-	sed -i -e "s/loglevel=3 quiet/${EFI_OPTIONS}/" ${MOUNT_DIR}/boot/grub/grub.cfg
+	sed -i -e "s/loglevel=3 quiet/${EFI_OPTIONS}/" ${MOUNT_DIR}/etc/default/grub.cfg
 
 	# Update GRUB Bootloader
-	arch-chroot ${MOUNT_DIR} grub mkconfig -o /boot/grub/grub.cfg
+	arch-chroot ${MOUNT_DIR} grub mkconfig -o /etc/default/grub.cfg
 
 }
 
@@ -313,7 +319,6 @@ system_mapping() {
 
 	# Make mount directories
 	mkdir -p ${MOUNT_DIR}/.snapshots
-	mkdir -p ${MOUNT_DIR}/boot
 	mkdir -p ${MOUNT_DIR}/home
 	mkdir -p ${MOUNT_DIR}/srv
 	mkdir -p ${MOUNT_DIR}/var/cache
@@ -327,6 +332,7 @@ system_mapping() {
 	mount -t btrfs -o rw,noatime,compress=zstd:6,subvol=/@srv $SYSTEM_PARTITION $MOUNT_DIR/srv
 
 	# Mount ESP system boot partition
+	mkdir -p ${MOUNT_DIR}/${ESP_MOUNT}
 	mount $BOOT_PARTITION ${MOUNT_DIR}/${ESP_MOUNT}
 
 }
@@ -387,6 +393,7 @@ if [[ "$CONFIRM" == "yes" ]]; then
 		echo 'Install Complete!!!'
 		sleep 5
 		clear
+		systemctl reboot
 
 	else
 
