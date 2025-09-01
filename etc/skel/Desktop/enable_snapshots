@@ -5,7 +5,7 @@
 if [[ "$USER" == "root" ]]; then
 
 	# Install snapper package
-	pacman -Syy --noconfirm snapper grub-btrfs
+	pacman -Syy --noconfirm snapper grub-btrfs inotify-tools
 	systemctl enable grub-btrfsd
 
 	# Unmount and remove .snapshots directory
