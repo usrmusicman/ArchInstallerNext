@@ -16,7 +16,7 @@ if [[ "$USER" == "root" ]]; then
 	snapper -c root create-config /
 
 	# Reboot System
-	slepp 3
+	slepp 5
 	systemctl reboot
 
 else
