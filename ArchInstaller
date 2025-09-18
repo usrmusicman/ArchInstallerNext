@@ -10,10 +10,13 @@ INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-
 NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl ocl-icd nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo"
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs cups cups-browsed cups-pdf cups-pk-helper dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope git grub gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin kio-gdrive kio-zeroconf konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware mtools multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi openrgb-git openrgb-plugin-effects-git openresolv openssh openvpn os-prober orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanlite soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
+BASE_SYSTEM="7zip alsa-utils apparmor argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs cups cups-browsed cups-pdf cups-pk-helper dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope git grub gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin kio-gdrive kio-zeroconf konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware mtools multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi openrgb-git openrgb-plugin-effects-git openresolv openssh openvpn os-prober orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanlite soundfont-fluid spectacle steam steam-native-runtime sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw usbguard usbmuxd unarchiver unrar vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp zram-generator"
 
 # Define where you want GRUB to be installed
 ESP_MOUNT="boot/efi"
+
+# Get RAM Size
+RAMSIZE=`zramctl -o DISKSIZE -n`
 
 # <<-- Main Menu -->>
 
@@ -42,8 +45,7 @@ if [[ "$USER" == "root" ]]; then
     lsblk -o TYPE,PATH ${INSTALL_DISK} | grep "part"
     echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
-    read -r -p "Type in the partition name of the swap partition (i.e. /dev/sda2): " SWAP_PARTITION
-    read -r -p "Type in the partition name of the system install (i.e. /dev/sda3): " SYSTEM_PARTITION
+    read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
     read -r -p "Type in your username (i.e. myusername): " USERNAME
     read -s -p "Type in ${USERNAME}'s password (i.e. mypassword): " PASSWORD
@@ -73,7 +75,6 @@ if [[ "$USER" == "root" ]]; then
     echo "System Settings"
     echo ""
     echo "Boot partition: $BOOT_PARTITION"
-    echo "Swap partition: $SWAP_PARTITION"
     echo "Root partition: $SYSTEM_PARTITION"
     echo "Install mountpoint: $MOUNT_DIR"
     echo "ESP system boot mountpoint: /${ESP_MOUNT}"
@@ -101,10 +102,6 @@ format_system_partitions() {
 
 	# Format system install partition
 	mkfs.btrfs -L Archlinux -f $SYSTEM_PARTITION
-
-	# Create and enable swap partition
-	mkswap ${SWAP_PARTITION}
-	swapon ${SWAP_PARTITION}
 
 }
 
@@ -152,14 +149,22 @@ main_installation() {
     install -Dm644 etc/sddm/kde_settings.conf $MOUNT_DIR/etc/sddm.conf.d/kde_settings.conf
     install -Dm644 etc/sddm/virtualkbd.conf $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
 
+    # ZRAM Generator Config
+    install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
+
+    # ZRAM etc fstab entry
+    echo "# ZRAM Swap" >> $MOUNT_DIR/etc/fstab
+    echo "/dev/zram0 none swap defaults,discard,pri=100,x-systemd.makefs 0 0" >> $MOUNT_DIR/etc/fstab
+	echo "" >> $MOUNT_DIR/etc/fstab
+
     # Install flathub as a user
-    install -Dm755 etc/skel/enable_flathub_as_user $MOUNT_DIR/etc/skel/Desktop/enable_flathub_as_user
+    install -Dm755 etc/skel/Desktop/enable_flathub_as_user $MOUNT_DIR/etc/skel/Desktop/enable_flathub_as_user
 
     # Install snapper installer script
-    install -Dm755 etc/skel/enable_snapshots $MOUNT_DIR/etc/skel/Desktop/enable_snapshots
+    install -Dm755 etc/skel/Desktop/enable_snapshots $MOUNT_DIR/etc/skel/Desktop/enable_snapshots
     
     # Install nvidia driver toggle script
-    install -Dm755 etc/skel/nvidia_driver_toggle $MOUNT_DIR/etc/skel/Desktop/nvidia_driver_toggle
+    install -Dm755 etc/skel/Desktop/nvidia_driver_toggle $MOUNT_DIR/etc/skel/Desktop/nvidia_driver_toggle
 
 	# Install CPU microcode
 	if [[ "${CPU}" == "Advanced" ]]; then
@@ -291,16 +296,16 @@ setup_bootloader() {
 	ROOT_UUID=`lsblk -o UUID ${SYSTEM_PARTITION} | tail -1`
 
 	# Commandline Options
-	EFI_OPTIONS="zswap.enabled=1 zswap.shrinker_enabled=1 zswap.compressor=zstd zswap.max_pool_percent=25 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} cpufreq.default_governor=performance mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
+	EFI_OPTIONS="lsm=landlock,lockdown,yama,integrity,apparmor,bpf zswap.enabled=1 zswap.shrinker_enabled=1 zswap.compressor=zstd zswap.max_pool_percent=25 rootfstype=btrfs resume=UUID=${ROOT_UUID} root=UUID=${ROOT_UUID} cpufreq.default_governor=performance mitigations=off threadirqs rw rootflags=subvol=@ loglevel=3 nowatchdog quiet splash"
 
 	# Install GRUB Bootloader
 	arch-chroot ${MOUNT_DIR} grub-install --target=x86_64-efi --efi-directory=/${ESP_MOUNT} --bootloader-id="Archlinux"
 
 	# Configure GRUB Bootloader
-	sed -i -e "s/loglevel=3 quiet/${EFI_OPTIONS}/" ${MOUNT_DIR}/etc/default/grub.cfg
+	sed -i -e "s/loglevel=3 quiet/${EFI_OPTIONS}/" ${MOUNT_DIR}/etc/default/grub
 
 	# Update GRUB Bootloader
-	arch-chroot ${MOUNT_DIR} grub mkconfig -o /etc/default/grub.cfg
+	arch-chroot ${MOUNT_DIR} grub-mkconfig -o /boot/grub/grub.cfg
 
 }
 
