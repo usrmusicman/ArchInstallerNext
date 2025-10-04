@@ -224,8 +224,8 @@ main_installation() {
     arch-chroot ${MOUNT_DIR} systemctl enable bluetooth.service
     arch-chroot ${MOUNT_DIR} systemctl enable cups.service
     arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
-    arch-chroot ${MOUNT_DIR} systemctl enable docker.service
     arch-chroot ${MOUNT_DIR} systemctl enable dbus-broker.service
+    arch-chroot ${MOUNT_DIR} systemctl enable docker.service
     arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
     arch-chroot ${MOUNT_DIR} systemctl enable scx.service
     arch-chroot ${MOUNT_DIR} systemctl enable scx_loader.service
