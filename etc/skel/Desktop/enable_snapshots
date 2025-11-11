@@ -8,11 +8,8 @@ if [[ "$USER" == "root" ]]; then
 	pacman -Syy --noconfirm snapper grub-btrfs inotify-tools
 	systemctl enable grub-btrfsd
 	systemctl enable snapper-backup.service
-	systemctl enable snapper-backup.timer
 	systemctl enable snapper-cleanup.service
-	systemctl enable snapper-cleanup.timer
 	systemctl enable snapper-timeline.service
-	systemctl enable snapper-timeline.timer
 	systemctl enable snapperd.service
 
 	# Unmount and remove .snapshots directory
