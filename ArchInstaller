@@ -7,10 +7,10 @@ AMDGPU_DRV="lib32-libva-mesa-driver lib32-ocl-icd lib32-vulkan-radeon libva-mesa
 INTELGPU_DRV="gst-plugin-qsv intel-compute-runtime intel-media-driver lib32-ocl-icd lib32-vulkan-intel ocl-icd vpl-gpu-rt vulkan-intel"
 
 # NVIDIA DRIVERS
-NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl ocl-icd nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo"
+NVIDIAGPU_DRV="lib32-nvidia-utils lib32-ocl-icd lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl ocl-icd nvidia-open-dkms nvidia-prime nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo"
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils apparmor argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs cups cups-browsed cups-pdf cups-pk-helper dnsmasq docker docker-compose dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope geoclue git grub gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin kio-gdrive kio-zeroconf konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware mtools multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi openrgb-git openrgb-plugin-effects-git openresolv openssh openvpn os-prober orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanlite soundfont-fluid spectacle steam sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird udisks2-btrfs ufw unarchiver unrar umu-launcher usbguard usbmuxd vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp zram-generator"
+BASE_SYSTEM="7zip alsa-utils apparmor argyllcms ark auto-cpufreq bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs cups cups-browsed cups-pdf cups-pk-helper dnsmasq dolphin dolphin-plugins dosfstools efibootmgr espeak-ng exfatprogs fastfetch ffmpeg ffmpeg4.4 ffmpegthumbs firefox flatpak flatpak-kcm fuse-overlayfs fwupd fwupd-efi gamemode gamescope geoclue git grub gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna hunspell icoutils ifuse kamera kate kcalc kdegraphics-mobipocket kdeplasma-addons kdialog keditbookmarks kf6 kgamma kid3 kio-admin kio-gdrive kio-zeroconf konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils linux-firmware lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware mtools multilib-devel net-tools networkmanager networkmanager-openvpn noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g octopi onlyoffice-bin openrgb-git openrgb-plugin-effects-git openresolv openssh openvpn os-prober orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 plasma-meta plymouth plymouth-kcm podman podman-compose power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan skanlite soundfont-fluid spectacle steam sudo switcheroo-control system-config-printer tesseract-data-eus thunderbird ttf-ms-fonts udisks2-btrfs ufw unarchiver unrar umu-launcher usbguard usbmuxd vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp zram-generator"
 
 # Define where you want GRUB to be installed
 ESP_MOUNT="boot/efi"
@@ -25,70 +25,75 @@ if [[ "$USER" == "root" ]]; then
 
 	# Install script dependencies
 	clear
-	pacman -Syy --noconfirm lshw
-
-	# Check your cpu and gpu vendor
-	CPU=`lshw -class cpu | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
-	GPU=`lshw -class video | grep "vendor" | cut -d ":" -f 2 | cut -d " " -f 2`
 
 	# Menu Wizard
     clear
-    echo "Archlinux installer setup wizard"
+    echo "Choose Your Installation Drive"
     echo ""
     lsblk -o TYPE,PATH | grep "disk"
     echo ""
     read -r -p "Type in the disk name you want to install the system on (i.e. /dev/sda): " INSTALL_DISK
     cfdisk ${INSTALL_DISK}
     clear
-    echo "Archlinux installer setup wizard"
+    echo "Chonfigure Your Partitions"
     echo ""
     lsblk -o TYPE,PATH ${INSTALL_DISK} | grep "part"
     echo ""
     read -r -p "Type in the partition name of the ESP boot partition (i.e. /dev/sda1): " BOOT_PARTITION
     read -r -p "Type in the partition name of the system install (i.e. /dev/sda2): " SYSTEM_PARTITION
     read -r -p "Type in the install mountpoint (i.e. /mnt): " MOUNT_DIR
+    clear
+    echo "Configure Your Hardware Devices and Choose A Kernel"
+    echo ""
+    read -r -p "Type in the name of your cpu brand (i.e. amd or intel): " CPU
+    read -r -p "Type in the name of your desired gpu brand you want to use (i.e. amd, intel or nvidia): " GPU
+    read -r -p "Type in the kernel you want to install (i.e. linux or linux-zen): " KERNEL
+    clear
+    echo "Configure Your User and PC Name"
+    echo ""
     read -r -p "Type in your username (i.e. myusername): " USERNAME
     read -s -p "Type in ${USERNAME}'s password (i.e. mypassword): " PASSWORD
     echo ""
     read -r -p "Type in your computer's host name (i.e. mycomputer): " HOSTNAME
-    read -r -p "Type in the kernel you want to install (i.e. linux or linux-zen): " KERNEL
     clear
     cat /etc/locale.gen | more
     clear
-    echo "Archlinux installer setup wizard"
+    echo "Configure Your Locale"
     echo ""
     read -r -p "Type in your system locale name (i.e. en_US): " LOCALE
     read -r -p "Type in a country code (i.e. ca, us, uk): " COUNTRY_CODE
     clear
     timedatectl list-timezones
     clear
-    echo "Archlinux installer setup wizard"
+    echo "Choose A Timezone"
     echo ""
     read -r -p "Type in your system's timezone (i.e. America/Toronto): " TIMEZONE
     clear
 
 	# Confirmation screen
-	echo "Archlinux installer setup wizard"
+	echo "REVIEW YOU SETUP!!"
     echo ""
-    echo "ARE THESE YOUR SETTINGS:"
     echo ""
-    echo "System Settings"
+    echo "System Installation Settings"
     echo ""
     echo "Boot partition: $BOOT_PARTITION"
     echo "Root partition: $SYSTEM_PARTITION"
     echo "Install mountpoint: $MOUNT_DIR"
     echo "ESP system boot mountpoint: /${ESP_MOUNT}"
+    echo ""
+    echo ""
+    echo "Hardware settings"
+    echo ""
     echo "CPU: $CPU"
     echo "GPU: $GPU"
     echo "Kernel to install: $KERNEL"
     echo ""
-    echo "User Settings"
+    echo ""
+    echo "Username and PC Name"
     echo ""
     echo "Username: $USERNAME"
     echo "Hostname: $HOSTNAME"
-    echo "System locale: LANG=${LOCALE}.UTF-8"
-    echo "System country code: $COUNTRY_CODE"
-    echo "System timezone: $TIMEZONE"
+    echo ""
     echo ""
     read -r -p "Is this information correct yes or no? " CONFIRM
     clear
@@ -162,12 +167,12 @@ main_installation() {
     install -Dm755 etc/skel/Desktop/nvidia_driver_toggle $MOUNT_DIR/etc/skel/Desktop/nvidia_driver_toggle
 
 	# Install CPU microcode
-	if [[ "${CPU}" == "Advanced" ]]; then
+	if [[ "${CPU}" == "amd" ]]; then
 
 		# Install AMD microcode
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm amd-ucode
 
-	elif [[ "${CPU}" == "Intel" ]]; then
+	elif [[ "${CPU}" == "intel" ]]; then
 
 		# Install Intel microcode
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm intel-ucode
@@ -175,17 +180,17 @@ main_installation() {
 	fi
 
 	# Install the display drivers
-    if [[ "${GPU}" == "Advanced" ]]; then
+    if [[ "${GPU}" == "amd" ]]; then
 
 		# Install AMD GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
 
-    elif [[ "${GPU}" == "Intel" ]]; then
+    elif [[ "${GPU}" == "intel" ]]; then
 
 		# Install Intel GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
 
-    elif [[ "${GPU}" == "NVIDIA" ]]; then
+    elif [[ "${GPU}" == "nvidia" ]]; then
 
 		# Install Nvidia GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
@@ -220,7 +225,7 @@ main_installation() {
     arch-chroot ${MOUNT_DIR} systemctl enable cups.service
     arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
     arch-chroot ${MOUNT_DIR} systemctl enable dbus-broker.service
-    arch-chroot ${MOUNT_DIR} systemctl enable docker.service
+    arch-chroot ${MOUNT_DIR} systemctl enable geoclue.service
     arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
     arch-chroot ${MOUNT_DIR} systemctl enable scx.service
     arch-chroot ${MOUNT_DIR} systemctl enable scx_loader.service
@@ -401,7 +406,6 @@ if [[ "$CONFIRM" == "yes" ]]; then
 		echo 'Install Complete!!!'
 		sleep 5
 		clear
-		systemctl reboot
 
 	else
 
