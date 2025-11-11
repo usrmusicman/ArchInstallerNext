@@ -23,7 +23,7 @@ if [[ "$USER" == "root" ]]; then
 			if [[ "${NVIDIA_TOGGLE}" == "official" ]]; then
 
 				# Install all the needed packages for the proprietary nvidia driver
-				pacman -Syy --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+				pacman -Syy --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-prime nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
 				pacman -Rsc --noconfirm lib32-vulkan-nouveau vulkan-nouveau
 
 				# Enable all Nvidia driver GPU services
@@ -60,7 +60,7 @@ if [[ "$USER" == "root" ]]; then
 
 				# Install only the needed packages for the foss nouveau driver
 				pacman -Syy --noconfirm lib32-vulkan-nouveau vulkan-nouveau
-				pacman -Rsc --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
+				pacman -Rsc --noconfirm lib32-nvidia-utils lib32-opencl-nvidia libva-nvidia-driver libvdpau-va-gl nvidia-open-dkms nvidia-prime nvidia-settings nvidia-utils nvtop opencl-nvidia vdpauinfo
 
 				# Remove nouveau blacklist
 				rm /etc/modprobe.d/blacklist-nouveau.conf
