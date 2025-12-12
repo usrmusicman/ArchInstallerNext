@@ -46,7 +46,8 @@ if [[ "$USER" == "root" ]]; then
     echo "Configure Your Hardware Devices and Choose A Kernel"
     echo ""
     read -r -p "Type in the name of your cpu brand (i.e. amd or intel): " CPU
-    read -r -p "Type in the name of your desired gpu brand you want to use (i.e. amd, intel or nvidia): " GPU
+    read -r -p "Type in the name of your integrated gpu brand you want to use (i.e. amd, intel, nvidia, none): " GPU_INTEGRATED
+    read -r -p "Type in the name of your discrete gpu brand you want to use (i.e. amd, intel, nvidia, none): " GPU_DISCRETE
     read -r -p "Type in the kernel you want to install (i.e. linux or linux-zen): " KERNEL
     clear
     echo "Configure Your User and PC Name"
@@ -85,7 +86,8 @@ if [[ "$USER" == "root" ]]; then
     echo "Hardware settings"
     echo ""
     echo "CPU: $CPU"
-    echo "GPU: $GPU"
+    echo "Integrated GPU: $GPU_INTEGRATED"
+    echo "Discrete GPU: $GPU_DISCRETE"
     echo "Kernel to install: $KERNEL"
     echo ""
     echo ""
@@ -187,17 +189,43 @@ main_installation() {
 	fi
 
 	# Install the display drivers
-    if [[ "${GPU}" == "amd" ]]; then
+    if [[ "${GPU_INTEGRATED}" == "amd" ]]; then
 
 		# Install AMD GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
 
-    elif [[ "${GPU}" == "intel" ]]; then
+    elif [[ "${GPU_INTEGRATED}" == "intel" ]]; then
 
 		# Install Intel GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
 
-    elif [[ "${GPU}" == "nvidia" ]]; then
+    elif [[ "${GPU_INTEGRATED}" == "nvidia" ]]; then
+
+		# Install Nvidia GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
+
+		# Enable nvidia GPU driver related services
+		arch-chroot ${MOUNT_DIR} systemctl enable nvidia-hibernate.service
+		arch-chroot ${MOUNT_DIR} systemctl enable nvidia-persistenced.service
+		arch-chroot ${MOUNT_DIR} systemctl enable nvidia-powerd.service
+		arch-chroot ${MOUNT_DIR} systemctl enable nvidia-resume.service
+		arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend.service
+		arch-chroot ${MOUNT_DIR} systemctl enable nvidia-suspend-then-hibernate.service
+
+    fi
+
+	# Install the display drivers
+    if [[ "${GPU_DISCRETE}" == "amd" ]]; then
+
+		# Install AMD GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $AMDGPU_DRV
+
+    elif [[ "${GPU_DISCRETE}" == "intel" ]]; then
+
+		# Install Intel GPU drivers
+		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $INTELGPU_DRV
+
+    elif [[ "${GPU_DISCRETE}" == "nvidia" ]]; then
 
 		# Install Nvidia GPU drivers
 		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $NVIDIAGPU_DRV
