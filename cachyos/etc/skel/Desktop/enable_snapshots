@@ -1,0 +1,38 @@
+#!/bin/sh
+# This script is designed to work with Archlinux
+
+# Check if user is root
+if [[ "$USER" == "root" ]]; then
+
+	# Install snapper package
+	pacman -Syy --noconfirm snapper grub-btrfs inotify-tools
+	systemctl enable grub-btrfsd
+	systemctl enable snapper-backup.service
+	systemctl enable snapper-cleanup.service
+	systemctl enable snapper-timeline.service
+	systemctl enable snapperd.service
+
+	# Unmount and remove .snapshots directory
+	umount /.snapshots
+	rm -rf /.snapshots
+
+	# Initialize snapper installation
+	snapper -c root create-config /
+
+	# Change the snapper root system config to have a more manageable amount of snapshots
+	sed -i -e "s/NUMBER_LIMIT=\"50\"/NUMBER_LIMIT=\"10\"/" /etc/snapper/configs/root
+	sed -i -e "s/TIMELINE_LIMIT_HOURLY=\"10\"/TIMELINE_LIMIT_HOURLY=\"5\"/" /etc/snapper/configs/root
+	sed -i -e "s/TIMELINE_LIMIT_DAILY=\"10\"/TIMELINE_LIMIT_DAILY=\"5\"/" /etc/snapper/configs/root
+	sed -i -e "s/TIMELINE_LIMIT_MONTHLY=\"10\"/TIMELINE_LIMIT_MONTHLY=\"5\"/" /etc/snapper/configs/root
+	sed -i -e "s/TIMELINE_LIMIT_YEARLY=\"10\"/TIMELINE_LIMIT_YEARLY=\"5\"/" /etc/snapper/configs/root
+
+	# Reboot System
+	slepp 5
+	systemctl reboot
+
+else
+
+	# Error Message
+	echo "You must run this script as the root user"
+
+fi
