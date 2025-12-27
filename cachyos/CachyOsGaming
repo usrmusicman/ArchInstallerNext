@@ -1,94 +1,66 @@
 #!/bin/sh
 
 # Archlinux with Plasma KDE base
-BASE_SYSTEM="7zip alsa-utils apparmor argyllcms ark bash-completion bluez bluez-cups bluez-hid2hci bluez-obex breeze5 btrfs-progs cups cups-browsed cups-pdf cups-pk-helper dbus-broker distrobox dosfstools exfatprogs ffmpeg4.4 ffmpegthumbs firefox gamemode gamescope gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va gwenview haruna icoutils ifuse kamera kate kcalc kdialog kio-admin kio-gdrive kio-zeroconf konsole kompare lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-jack lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils lshw man-db man-pages mangohud mesa-demos mesa-utils mkinitcpio-firmware mtools multilib-devel net-tools noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g onlyoffice-bin openrgb-git  openssh os-prober orca partitionmanager phonon-qt6-vlc pipewire-alsa pipewire-audio pipewire-ffado pipewire-jack pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 pkgstats plymouth plymouth-kcm podman podman-compose power-profiles-daemon pulse-native-provider pulsemixer qt6-multimedia qt6-multimedia-ffmpeg qpwgraph realtime-privileges sane sane-airscan soundfont-fluid spectacle steam system-config-printer thunderbird ttf-ms-fonts ufw unarchiver unrar umu-launcher usbguard usbmuxd vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp zram-generator"
+BASE_SYSTEM="distrobox ffmpeg4.4 ffmpegthumbs flatpak gamemode gamescope gst-libav gst-plugin-libcamera gst-plugin-pipewire gst-plugins-bad gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugin-va haruna icoutils ifuse kio-admin kio-gdrive kio-zeroconf ksshaskpass lib32-gamemode lib32-gst-plugins-base lib32-gst-plugins-base-libs lib32-gst-plugins-good lib32-mangohud lib32-mesa-demos lib32-mesa-utils lib32-pipewire-v4l2 libappimage libdvdcss libgpod libimobiledevice libva-utils man-db man-pages mangohud mesa-demos mesa-utils mtools multilib-devel net-tools noto-fonts noto-fonts-cjk noto-fonts-emoji nss-mdns ntfs-3g onlyoffice-bin openrgb-git openssh partitionmanager pipewire-alsa pipewire-audio pipewire-ffado pipewire-libcamera pipewire-pulse pipewire-session-manager pipewire-v4l2 pkgstats podman podman-compose proton-cachyos-slr pulsemixer qpwgraph realtime-privileges sane sane-airscan soundfont-fluid spectacle steam system-config-printer thunderbird ufw unarchiver unrar umu-launcher vim vim-runtime vulkan-tools wacomtablet wget wireless-regdb wireplumber xdg-user-dirs-gtk yt-dlp"
 
 # <<-- Functions -->>
 
 # Make sure to run the script as root
 if [[ "$USER" == "root" ]]; then
 
-	main_installation() {
+	# Enable ntsync for wine
+	install -Dm644 etc/modules/10-ntsync.conf $MOUNT_DIR/etc/modules-load.d/10-ntsync.conf
 
-		# Enable ntsync for wine
-		install -Dm644 etc/modules/10-ntsync.conf $MOUNT_DIR/etc/modules-load.d/10-ntsync.conf
+	# Enable network roaming discovery with avahi
+	install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
 
-		# Enable network roaming discovery with avahi
-		install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
+	# Install SDDM configs
+	install -Dm644 etc/sddm/virtualkbd.conf $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
 
-		# Install SDDM configs
-		install -Dm644 etc/sddm/virtualkbd.conf $MOUNT_DIR/etc/sddm.conf.d/virtualkbd.conf
+	# Install flathub as a user
+	install -Dm755 etc/skel/Desktop/enable_flathub_as_user $MOUNT_DIR/etc/skel/Desktop/enable_flathub_as_user
 
-		# ZRAM Generator Config
-		install -Dm644 etc/systemd/zram-generator.conf $MOUNT_DIR/etc/systemd/zram-generator.conf
+	# Install snapper installer script
+	install -Dm755 etc/skel/Desktop/enable_snapshots $MOUNT_DIR/etc/skel/Desktop/enable_snapshots
 
-		# Install flathub as a user
-		install -Dm755 etc/skel/Desktop/enable_flathub_as_user $MOUNT_DIR/etc/skel/Desktop/enable_flathub_as_user
+	# Install nvidia driver toggle script
+	install -Dm755 etc/skel/Desktop/nvidia_driver_toggle $MOUNT_DIR/etc/skel/Desktop/nvidia_driver_toggle
 
-		# Install snapper installer script
-		install -Dm755 etc/skel/Desktop/enable_snapshots $MOUNT_DIR/etc/skel/Desktop/enable_snapshots
+	# Install pipewire-jack package before the base-system
+	pacman -Syy lib32-pipewire-jack pipewire-jack
 
-		# Install nvidia driver toggle script
-		install -Dm755 etc/skel/Desktop/nvidia_driver_toggle $MOUNT_DIR/etc/skel/Desktop/nvidia_driver_toggle
+	# Install system packages
+	pacman -Syy --noconfirm $BASE_SYSTEM
 
-		# Install system packages
-		arch-chroot ${MOUNT_DIR} pacman -Syy --noconfirm $BASE_SYSTEM
+	# Run final system package update
+	pacman -Suu --noconfirm
 
-		# Run final system package update
-		arch-chroot ${MOUNT_DIR} pacman -Suu --noconfirm
+	# Enable system services
+    systemctl enable avahi-daemon.service
+    systemctl enable avahi-dnsconfd.service
+    systemctl enable bluetooth.service
+    systemctl enable cups.service
+    systemctl enable dbus-broker.service
+    systemctl enable power-profiles-daemon.service
+    systemctl enable scx_loader.service
+    systemctl enable sddm.service
+    systemctl enable ufw.service
+    systemctl enable NetworkManager.service
 
-		# Enable system services
-		arch-chroot ${MOUNT_DIR} systemctl enable apparmor.service
-		arch-chroot ${MOUNT_DIR} systemctl enable avahi-daemon.service
-		arch-chroot ${MOUNT_DIR} systemctl enable avahi-dnsconfd.service
-		arch-chroot ${MOUNT_DIR} systemctl enable bluetooth.service
-		arch-chroot ${MOUNT_DIR} systemctl enable cups.service
-		arch-chroot ${MOUNT_DIR} systemctl enable cups-browsed.service
-		arch-chroot ${MOUNT_DIR} systemctl enable dbus-broker.service
-		arch-chroot ${MOUNT_DIR} systemctl enable power-profiles-daemon.service
-		arch-chroot ${MOUNT_DIR} systemctl enable scx.service
-		arch-chroot ${MOUNT_DIR} systemctl enable scx_loader.service
-		arch-chroot ${MOUNT_DIR} systemctl enable sddm.service
-		arch-chroot ${MOUNT_DIR} systemctl enable ufw.service
-		arch-chroot ${MOUNT_DIR} systemctl enable NetworkManager.service
+	# Make vim the default system-wide editor
+	echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
 
-		# Make vim the default system-wide editor
-		echo "EDITOR=/usr/bin/vim" > $MOUNT_DIR/etc/environment
+	# Make the fluid soundfont the default for midi playback
+	echo "SOUND_FONT=/usr/share/soundfonts/FluidR3_GM.sf2" > $MOUNT_DIR/etc/conf.d/fluidsynth
 
-		# Make the fluid soundfont the default for midi playback
-		echo "SOUND_FONT=/usr/share/soundfonts/FluidR3_GM.sf2" > $MOUNT_DIR/etc/conf.d/fluidsynth
-
-		# Add user to groups
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME audio
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME cups
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME flatpak
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME fwupd
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME gamemode
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME games
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME realtime
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME sddm
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME video
-		arch-chroot ${MOUNT_DIR} gpasswd -a $USERNAME wheel
-
-	}
-
-# <<-- Program Logic -->>
-
-	if [[ "$CONFIRM" == "yes" ]]; then
-
-		# Main system installation
-		echo "Installing system..."
-		echo ""
-		main_installation
-		sleep 5
-		clear
-
-	else
-
-		# exit script
-		exit
-
-	fi
+	# Add user to groups
+	gpasswd -a $USER cups
+	gpasswd -a $USER flatpak
+	gpasswd -a $USER fwupd
+	gpasswd -a $USER gamemode
+	gpasswd -a $USER games
+	gpasswd -a $USER realtime
+	gpasswd -a $USER sddm
 
 else
 

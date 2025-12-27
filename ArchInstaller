@@ -147,9 +147,6 @@ main_installation() {
     # Enable network roaming discovery with avahi
     install -Dm644 etc/nsswitch.conf $MOUNT_DIR/etc/nsswitch.conf
 
-    # Configure NetworkManager's default DNS service
-    install -Dm644 etc/NetworkManager/10-dns.conf $MOUNT_DIR/etc/NetworkManager/conf.d/10-dns.conf
-
     # Install pacman.conf
     install -Dm644 etc/pacman/pacman.conf $MOUNT_DIR/etc/pacman.conf
 
